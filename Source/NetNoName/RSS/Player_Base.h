@@ -62,6 +62,10 @@ protected:
 public:
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
 	UAnimMontage* AM_Attack;
+
+	UPROPERTY(EditAnywhere, Blueprintable, Category = FX)
+	UParticleSystemComponent* MuzzleFlash;
+
 	
 private:
 	
