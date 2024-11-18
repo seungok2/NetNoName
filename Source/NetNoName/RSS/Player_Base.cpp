@@ -28,12 +28,23 @@ APlayer_Base::APlayer_Base()
 
 
 	GetCapsuleComponent()->SetCapsuleHalfHeight(95.0f);
-	ConstructorHelpers::FObjectFinder<USkeletalMesh> InitMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/ParagonWraith/Characters/Heroes/Wraith/Skins/ODGreen/Meshes/Wraith_ODGreen.Wraith_ODGreen'"));
+	ConstructorHelpers::FObjectFinder<USkeletalMesh> InitMesh(
+		TEXT("/Game/ParagonTwinblast/Characters/Heroes/TwinBlast/Meshes/TwinBlast"));
 	if (InitMesh.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(InitMesh.Object);
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0,0,-95),FRotator(0,-90,0));
-	}	
+	}
+
+	ConstructorHelpers::FClassFinder<UAnimInstance> AnimBP(TEXT("/Game/Bluprint/Player/ABP_Twinblast"));
+	if (AnimBP.Succeeded())
+	{
+		UE_LOG(LogTemp, Display, TEXT("AnimBP.Succeeded"));
+		if (AnimBP.Class)
+		{
+			GetMesh()->SetAnimClass(AnimBP.Class);
+		}
+	}
 }
 
 // Called when the game starts or when spawned
@@ -91,7 +102,33 @@ void APlayer_Base::Action_Look(const FInputActionValue& Value)
 
 void APlayer_Base::Action_MBLeft(const FInputActionValue& Value)
 {
-	
+	if (bIsAttacking)
+	{
+		bSaveAttack = true;
+	}
+	else
+	{
+		bIsAttacking = true;
+
+		if (AM_Attack)
+			PlayAnimMontage(AM_Attack);
+	}
+}
+
+void APlayer_Base::ResetCombo()
+{
+	AttackCount = 0;
+	bSaveAttack = false;
+	bIsAttacking= false;
+}
+
+void APlayer_Base::ComboAttackSave()
+{
+	if (bSaveAttack)
+	{
+		bSaveAttack = false;
+		
+	}
 }
 
 void APlayer_Base::Action_MBRight(const FInputActionValue& Value)
@@ -137,8 +174,8 @@ void APlayer_Base::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 			Subsystem->AddMappingContext(InputMappingContext, 0);
 		}
 	}
-	GetController<APlayerController>()->PlayerCameraManager->ViewPitchMin = -45.0f;
-	GetController<APlayerController>()->PlayerCameraManager->ViewPitchMax = 15.0f;
+	// GetController<APlayerController>()->PlayerCameraManager->ViewPitchMin = -45.0f;
+	// GetController<APlayerController>()->PlayerCameraManager->ViewPitchMax = 15.0f;
 
 	// Enhanced Input Component 설정
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
@@ -155,4 +192,5 @@ void APlayer_Base::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		EnhancedInputComponent->BindAction(IA_R, ETriggerEvent::Started, this, &APlayer_Base::Action_R);
 	}
 }
+
 

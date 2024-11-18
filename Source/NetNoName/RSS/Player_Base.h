@@ -51,8 +51,17 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Move)
 	bool bIsTravel = false;
-public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attack)
+	bool bIsAttacking = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attack)
+	bool bSaveAttack = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attack)
+	int32 AttackCount;
 	
+public:
+	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
+	UAnimMontage* AM_Attack;
 	
 private:
 	
@@ -83,5 +92,9 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	
-
+	UFUNCTION(BlueprintCallable)
+	void ResetCombo();
+	UFUNCTION(BlueprintCallable)
+	void ComboAttackSave();
 };
+
