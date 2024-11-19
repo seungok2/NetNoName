@@ -5,7 +5,6 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
-#include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
 // Sets default values
@@ -16,7 +15,8 @@ APlayer_Base::APlayer_Base()
 
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->SetupAttachment(RootComponent);
-	SpringArmComp->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 70.0f),
+	SpringArmComp->SetRelativeLocationAndRotation(
+		FVector(0.0f, 0.0f, 70.0f),
 		FRotator(0, 70, 90));
 	SpringArmComp->TargetArmLength = 300;
 	SpringArmComp->bUsePawnControlRotation = true;
@@ -25,18 +25,20 @@ APlayer_Base::APlayer_Base()
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringArmComp);
 	CameraComp->bUsePawnControlRotation = false;
+}
 
-
-	GetCapsuleComponent()->SetCapsuleHalfHeight(95.0f);
-	ConstructorHelpers::FObjectFinder<USkeletalMesh> InitMesh(
-		TEXT("/Game/ParagonTwinblast/Characters/Heroes/TwinBlast/Meshes/TwinBlast"));
+void APlayer_Base::SetSkeletalMesh()
+{
+	ConstructorHelpers::FObjectFinder<USkeletalMesh> InitMesh(*SkeletalMeshPath);
 	if (InitMesh.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(InitMesh.Object);
-		GetMesh()->SetRelativeLocationAndRotation(FVector(0,0,-95),FRotator(0,-90,0));
 	}
+}
 
-	ConstructorHelpers::FClassFinder<UAnimInstance> AnimBP(TEXT("/Game/Bluprint/Player/ABP_Twinblast"));
+void APlayer_Base::SetAnimClass()
+{
+	ConstructorHelpers::FClassFinder<UAnimInstance> AnimBP(*AnimClassPath);
 	if (AnimBP.Succeeded())
 	{
 		UE_LOG(LogTemp, Display, TEXT("AnimBP.Succeeded"));
@@ -82,11 +84,6 @@ void APlayer_Base::Action_Jump(const FInputActionValue& Value)
 	Jump();
 }
 
-void APlayer_Base::Action_Travel(const FInputActionValue& Value)
-{
-	bIsTravel = !bIsTravel;
-}
-
 void APlayer_Base::Action_Look(const FInputActionValue& Value)
 {
 	// input is a Vector2D
@@ -100,56 +97,6 @@ void APlayer_Base::Action_Look(const FInputActionValue& Value)
 	}
 }
 
-void APlayer_Base::Action_MBLeft(const FInputActionValue& Value)
-{
-	if (bIsAttacking)
-	{
-		bSaveAttack = true;
-	}
-	else
-	{
-		bIsAttacking = true;
-
-		if (AM_Attack)
-			PlayAnimMontage(AM_Attack);
-	}
-}
-
-void APlayer_Base::ResetCombo()
-{
-	AttackCount = 0;
-	bSaveAttack = false;
-	bIsAttacking= false;
-}
-
-void APlayer_Base::ComboAttackSave()
-{
-	if (bSaveAttack)
-	{
-		bSaveAttack = false;
-		
-	}
-}
-
-void APlayer_Base::Action_MBRight(const FInputActionValue& Value)
-{
-	
-}
-
-void APlayer_Base::Action_Q(const FInputActionValue& Value)
-{
-	
-}
-
-void APlayer_Base::Action_E(const FInputActionValue& Value)
-{
-	
-}
-
-void APlayer_Base::Action_R(const FInputActionValue& Value)
-{
-
-}
 
 // Called every frame
 void APlayer_Base::Tick(float DeltaTime)
@@ -176,20 +123,13 @@ void APlayer_Base::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	}
 	// GetController<APlayerController>()->PlayerCameraManager->ViewPitchMin = -45.0f;
 	// GetController<APlayerController>()->PlayerCameraManager->ViewPitchMax = 15.0f;
-
-	// Enhanced Input Component 설정
+	
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
 	{
 		// Move 액션 바인딩 (축 입력)
 		EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &APlayer_Base::Action_Move);
 		EnhancedInputComponent->BindAction(IA_Jump, ETriggerEvent::Started, this, &APlayer_Base::Action_Jump);
-		EnhancedInputComponent->BindAction(IA_Travel, ETriggerEvent::Started, this, &APlayer_Base::Action_Travel);
 		EnhancedInputComponent->BindAction(IA_Look, ETriggerEvent::Triggered, this, &APlayer_Base::Action_Look);
-		EnhancedInputComponent->BindAction(IA_MBLeft, ETriggerEvent::Started, this, &APlayer_Base::Action_MBLeft);
-		EnhancedInputComponent->BindAction(IA_MBRight, ETriggerEvent::Started, this, &APlayer_Base::Action_MBRight);
-		EnhancedInputComponent->BindAction(IA_Q, ETriggerEvent::Started, this, &APlayer_Base::Action_Q);
-		EnhancedInputComponent->BindAction(IA_E, ETriggerEvent::Started, this, &APlayer_Base::Action_E);
-		EnhancedInputComponent->BindAction(IA_R, ETriggerEvent::Started, this, &APlayer_Base::Action_R);
 	}
 }
 

@@ -30,8 +30,6 @@ protected:
 	UInputAction* IA_Move;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input_Move")
 	UInputAction* IA_Jump;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input_Move")
-	UInputAction* IA_Travel;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input_Look")
 	UInputAction* IA_Look;
@@ -49,22 +47,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* IA_R;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Move)
-	bool bIsTravel = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attack)
-	bool bIsAttacking = false;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attack)
-	bool bSaveAttack = false;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attack)
-	int32 AttackCount;
-	
 public:
-	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
-	UAnimMontage* AM_Attack;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Path")
+	FString SkeletalMeshPath;
 
-	UPROPERTY(EditAnywhere, Blueprintable, Category = FX)
-	UParticleSystemComponent* MuzzleFlash;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Path")
+	FString AnimClassPath;
 
 	
 private:
@@ -75,30 +63,23 @@ protected:
 
 	virtual void Action_Move(const FInputActionValue& Value);
 	virtual void Action_Jump(const FInputActionValue& Value);
-	virtual void Action_Travel(const FInputActionValue& Value);
-	
 	virtual void Action_Look(const FInputActionValue& Value);
-	
-	virtual void Action_MBLeft(const FInputActionValue& Value);
-	virtual void Action_MBRight(const FInputActionValue& Value);
-	virtual void Action_Q(const FInputActionValue& Value);
-	virtual void Action_E(const FInputActionValue& Value);
-	virtual void Action_R(const FInputActionValue& Value);
+	virtual void Action_MBLeft(const FInputActionValue& Value) PURE_VIRTUAL(APlayer_Base::Action_MBLeft,);
+	virtual void Action_MBRight(const FInputActionValue& Value) PURE_VIRTUAL(APlayer_Base::Action_MBRight,);
+	virtual void Action_Q(const FInputActionValue& Value) PURE_VIRTUAL(APlayer_Base::Action_Q,);
+	virtual void Action_E(const FInputActionValue& Value) PURE_VIRTUAL(APlayer_Base::Action_E,);
+	virtual void Action_R(const FInputActionValue& Value) PURE_VIRTUAL(APlayer_Base::Action_R,);
 	
 public:
 	// Sets default values for this character's properties
 	APlayer_Base();
-	
+	void SetSkeletalMesh();
+	void SetAnimClass();
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	
-	UFUNCTION(BlueprintCallable)
-	void ResetCombo();
-	UFUNCTION(BlueprintCallable)
-	void ComboAttackSave();
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 };
 
