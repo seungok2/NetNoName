@@ -12,12 +12,23 @@ public class NetNoName : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
-		// Uncomment if you are using Slate UI
-		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
-		
-		// Uncomment if you are using online features
-		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
 
-		// To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
-	}
+        // Public 헤더 파일 경로
+        PublicIncludePaths.AddRange(new string[] {
+            "NetNoName/CSW/public"
+        });
+
+        // Private CPP 파일 경로
+        PrivateIncludePaths.AddRange(new string[] {
+            "NetNoName/CSW/private"
+        });
+
+        // Uncomment if you are using Slate UI
+        // PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
+
+        // Uncomment if you are using online features
+        // PrivateDependencyModuleNames.Add("OnlineSubsystem");
+
+        // To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
+    }
 }
