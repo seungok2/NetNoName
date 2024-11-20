@@ -12,7 +12,7 @@ APlayer_Base::APlayer_Base()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->SetupAttachment(RootComponent);
 	SpringArmComp->SetRelativeLocationAndRotation(
@@ -23,7 +23,7 @@ APlayer_Base::APlayer_Base()
 	SpringArmComp->SocketOffset = FVector(0.0f, 60.0f, 0.0f);
 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
-	CameraComp->SetupAttachment(SpringArmComp);
+	CameraComp->SetupAttachment(SpringArmComp, USpringArmComponent::SocketName);
 	CameraComp->bUsePawnControlRotation = false;
 }
 
@@ -84,6 +84,11 @@ void APlayer_Base::Action_Jump(const FInputActionValue& Value)
 	Jump();
 }
 
+void APlayer_Base::Action_JumpEnd(const FInputActionValue& Value)
+{
+	StopJumping();
+}
+
 void APlayer_Base::Action_Look(const FInputActionValue& Value)
 {
 	// input is a Vector2D
@@ -93,7 +98,7 @@ void APlayer_Base::Action_Look(const FInputActionValue& Value)
 	{
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(bLookUpInvert ? LookAxisVector.Y : -LookAxisVector.Y);
+		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
 
@@ -129,6 +134,7 @@ void APlayer_Base::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		// Move 액션 바인딩 (축 입력)
 		EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &APlayer_Base::Action_Move);
 		EnhancedInputComponent->BindAction(IA_Jump, ETriggerEvent::Started, this, &APlayer_Base::Action_Jump);
+		EnhancedInputComponent->BindAction(IA_Jump, ETriggerEvent::Completed, this, &APlayer_Base::Action_JumpEnd);
 		EnhancedInputComponent->BindAction(IA_Look, ETriggerEvent::Triggered, this, &APlayer_Base::Action_Look);
 	}
 }

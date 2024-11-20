@@ -63,6 +63,7 @@ protected:
 
 	virtual void Action_Move(const FInputActionValue& Value);
 	virtual void Action_Jump(const FInputActionValue& Value);
+	virtual void Action_JumpEnd(const FInputActionValue& Value);
 	virtual void Action_Look(const FInputActionValue& Value);
 	virtual void Action_MBLeft(const FInputActionValue& Value) PURE_VIRTUAL(APlayer_Base::Action_MBLeft,);
 	virtual void Action_MBRight(const FInputActionValue& Value) PURE_VIRTUAL(APlayer_Base::Action_MBRight,);
