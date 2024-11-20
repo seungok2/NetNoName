@@ -1,6 +1,9 @@
 # Visual Studio 2015 user specific files
 .vs/
 
+# Ridar user specific files
+.idea/
+
 # Compiled Object files
 *.slo
 *.lo
@@ -72,7 +75,7 @@ Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
-Content/FXVarietyPack*
-Content/KTP_Effect*
-Content/ParagonNarbash*
-Content/ParagonRevenant*
+Content/Paragon*
+Content/Level/Test*
+
+
