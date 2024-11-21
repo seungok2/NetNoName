@@ -32,6 +32,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
 	UAnimMontage* AM_PrimaryAttack;
+
+	UPROPERTY(EditAnywhere, Blueprintable, Category = Projectile)
+	TSubclassOf<class AProjectile_Base> Projectile_Primary;
 private:
 
 protected:

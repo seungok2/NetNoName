@@ -15,15 +15,21 @@ class NETNONAME_API AP_Revenant_Primay : public AProjectile_Particle_Cascade
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(VisibleAnywhere, Category = Particle)
-	UParticleSystemComponent* Particle_Hit_Character;
+	UPROPERTY(EditAnywhere, Category = Particle)
+	UParticleSystem* Particle_Hit_Character;
 
-	UPROPERTY(VisibleAnywhere, Category = Particle)
-	UParticleSystemComponent* Particle_Hit_World;
+	UPROPERTY(EditAnywhere, Category = Particle)
+	UParticleSystem* Particle_Hit_World;
 
-	UPROPERTY(VisibleAnywhere, Category = Particle)
-	UParticleSystemComponent* Particle_Hit_Water;
+	UPROPERTY(EditAnywhere, Category = Particle)
+	UParticleSystem* Particle_Hit_Water;
 
-	UPROPERTY(VisibleAnywhere, Category = Particle)
-	UParticleSystemComponent* Particle_NoHit;
+	UPROPERTY(EditAnywhere, Category = Particle)
+	UParticleSystem* Particle_NoHit;
+
+protected:
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	
+public:
+	AP_Revenant_Primay();
 };

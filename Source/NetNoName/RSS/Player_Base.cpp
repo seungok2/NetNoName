@@ -6,6 +6,7 @@
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 APlayer_Base::APlayer_Base()
@@ -126,7 +127,7 @@ void APlayer_Base::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 			Subsystem->AddMappingContext(InputMappingContext, 0);
 		}
 	}
-	// GetController<APlayerController>()->PlayerCameraManager->ViewPitchMin = -45.0f;
+	 GetController<APlayerController>()->PlayerCameraManager->ViewPitchMin = -45.0f;
 	// GetController<APlayerController>()->PlayerCameraManager->ViewPitchMax = 15.0f;
 	
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
@@ -139,4 +140,16 @@ void APlayer_Base::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	}
 }
 
-
+FTransform APlayer_Base::Calc_AimTransform(FName socketName, ECollisionChannel traceChannel ,float range)
+{
+	FHitResult Hit;
+	FVector StartLocation = GetMesh()->GetSocketLocation(socketName);
+	FVector EndLocation = CameraComp->GetComponentLocation() + CameraComp->GetForwardVector() * range;
+	bool result = GetWorld()->LineTraceSingleByChannel(Hit, StartLocation, EndLocation, traceChannel);
+	if (result)
+	{
+		EndLocation = Hit.ImpactPoint;
+	}
+	FRotator LookAtRotator = UKismetMathLibrary::FindLookAtRotation(StartLocation, EndLocation);
+	return UKismetMathLibrary::MakeTransform(StartLocation, LookAtRotator);
+}

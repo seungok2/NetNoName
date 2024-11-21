@@ -3,6 +3,7 @@
 
 #include "Player_Revenant.h"
 #include "EnhancedInputComponent.h"
+#include "Projectile_Base.h"
 #include "Components/CapsuleComponent.h"
 
 APlayer_Revenant::APlayer_Revenant()
@@ -47,7 +48,10 @@ void APlayer_Revenant::Action_MBLeft(const FInputActionValue& Value)
 	{
 		bIsAttacking = true;
 		if (AM_PrimaryAttack)
+		{
 			PlayAnimMontage(AM_PrimaryAttack);
+			GetWorld()->SpawnActor<AProjectile_Base>(Projectile_Primary, FTransform(Calc_AimTransform(FName("BulletPosition"), ECC_Visibility)));
+		}
 	}
 }
 
