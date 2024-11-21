@@ -6,13 +6,14 @@
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 APlayer_Base::APlayer_Base()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->SetupAttachment(RootComponent);
 	SpringArmComp->SetRelativeLocationAndRotation(
@@ -23,7 +24,7 @@ APlayer_Base::APlayer_Base()
 	SpringArmComp->SocketOffset = FVector(0.0f, 60.0f, 0.0f);
 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
-	CameraComp->SetupAttachment(SpringArmComp);
+	CameraComp->SetupAttachment(SpringArmComp, USpringArmComponent::SocketName);
 	CameraComp->bUsePawnControlRotation = false;
 }
 
@@ -84,6 +85,11 @@ void APlayer_Base::Action_Jump(const FInputActionValue& Value)
 	Jump();
 }
 
+void APlayer_Base::Action_JumpEnd(const FInputActionValue& Value)
+{
+	StopJumping();
+}
+
 void APlayer_Base::Action_Look(const FInputActionValue& Value)
 {
 	// input is a Vector2D
@@ -121,7 +127,7 @@ void APlayer_Base::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 			Subsystem->AddMappingContext(InputMappingContext, 0);
 		}
 	}
-	// GetController<APlayerController>()->PlayerCameraManager->ViewPitchMin = -45.0f;
+	 GetController<APlayerController>()->PlayerCameraManager->ViewPitchMin = -45.0f;
 	// GetController<APlayerController>()->PlayerCameraManager->ViewPitchMax = 15.0f;
 	
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
@@ -129,8 +135,21 @@ void APlayer_Base::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		// Move 액션 바인딩 (축 입력)
 		EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &APlayer_Base::Action_Move);
 		EnhancedInputComponent->BindAction(IA_Jump, ETriggerEvent::Started, this, &APlayer_Base::Action_Jump);
+		EnhancedInputComponent->BindAction(IA_Jump, ETriggerEvent::Completed, this, &APlayer_Base::Action_JumpEnd);
 		EnhancedInputComponent->BindAction(IA_Look, ETriggerEvent::Triggered, this, &APlayer_Base::Action_Look);
 	}
 }
 
-
+FTransform APlayer_Base::Calc_AimTransform(FName socketName, ECollisionChannel traceChannel ,float range)
+{
+	FHitResult Hit;
+	FVector StartLocation = GetMesh()->GetSocketLocation(socketName);
+	FVector EndLocation = CameraComp->GetComponentLocation() + CameraComp->GetForwardVector() * range;
+	bool result = GetWorld()->LineTraceSingleByChannel(Hit, StartLocation, EndLocation, traceChannel);
+	if (result)
+	{
+		EndLocation = Hit.ImpactPoint;
+	}
+	FRotator LookAtRotator = UKismetMathLibrary::FindLookAtRotation(StartLocation, EndLocation);
+	return UKismetMathLibrary::MakeTransform(StartLocation, LookAtRotator);
+}
