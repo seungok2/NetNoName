@@ -35,6 +35,12 @@ public:
 
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Projectile)
 	TSubclassOf<class AProjectile_Base> Projectile_Primary;
+
+	UPROPERTY(VisibleAnywhere, Category = Projectile)
+	int8 MaxPrimaryProjectileCount = 4;
+
+	UPROPERTY(EditAnywhere, Blueprintable, Category = Projectile)
+	int8 CurrentPrimaryProjectileCount = 4;
 private:
 
 protected:
