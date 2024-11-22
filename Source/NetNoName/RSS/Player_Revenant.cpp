@@ -36,7 +36,7 @@ void APlayer_Revenant::ComboAttackSave()
 	}
 }
 
-void APlayer_Revenant::Action_MBLeft(const FInputActionValue& Value)
+void APlayer_Revenant::PrimaryAttack(const FInputActionValue& Value)
 {
 	//Super::Action_MBLeft(Value);
 
@@ -55,24 +55,29 @@ void APlayer_Revenant::Action_MBLeft(const FInputActionValue& Value)
 	}
 }
 
-void APlayer_Revenant::Action_MBRight(const FInputActionValue& Value)
+void APlayer_Revenant::Reload(const FInputActionValue& Value)
 {
-	//Super::Action_MBRight(Value);
+	
+}
+
+void APlayer_Revenant::ReloadEnd(const FInputActionValue& Value)
+{
+	
 }
 
 void APlayer_Revenant::Action_Q(const FInputActionValue& Value)
 {
-	//Super::Action_Q(Value);
+	
 }
 
 void APlayer_Revenant::Action_E(const FInputActionValue& Value)
 {
-	//Super::Action_E(Value);
+	
 }
 
 void APlayer_Revenant::Action_R(const FInputActionValue& Value)
 {
-	//Super::Action_R(Value);
+	
 }
 
 void APlayer_Revenant::BeginPlay()
@@ -90,8 +95,9 @@ void APlayer_Revenant::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	// Enhanced Input Component 설정
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
 	{
-		EnhancedInputComponent->BindAction(IA_MBLeft, ETriggerEvent::Started, this, &APlayer_Revenant::Action_MBLeft);
-		EnhancedInputComponent->BindAction(IA_MBRight, ETriggerEvent::Started, this, &APlayer_Revenant::Action_MBRight);
+		EnhancedInputComponent->BindAction(IA_MBLeft, ETriggerEvent::Started, this, &APlayer_Revenant::PrimaryAttack);
+		EnhancedInputComponent->BindAction(IA_MBRight, ETriggerEvent::Started, this, &APlayer_Revenant::Reload);
+		EnhancedInputComponent->BindAction(IA_MBRight, ETriggerEvent::Canceled, this, &APlayer_Revenant::ReloadEnd);
 		EnhancedInputComponent->BindAction(IA_Q, ETriggerEvent::Started, this, &APlayer_Revenant::Action_Q);
 		EnhancedInputComponent->BindAction(IA_E, ETriggerEvent::Started, this, &APlayer_Revenant::Action_E);
 		EnhancedInputComponent->BindAction(IA_R, ETriggerEvent::Started, this, &APlayer_Revenant::Action_R);

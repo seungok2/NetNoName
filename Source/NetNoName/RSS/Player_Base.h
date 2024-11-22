@@ -65,12 +65,6 @@ protected:
 	virtual void Action_Jump(const FInputActionValue& Value);
 	virtual void Action_JumpEnd(const FInputActionValue& Value);
 	virtual void Action_Look(const FInputActionValue& Value);
-	virtual void Action_MBLeft(const FInputActionValue& Value) PURE_VIRTUAL(APlayer_Base::Action_MBLeft,);
-	virtual void Action_MBRight(const FInputActionValue& Value) PURE_VIRTUAL(APlayer_Base::Action_MBRight,);
-	virtual void Action_Q(const FInputActionValue& Value) PURE_VIRTUAL(APlayer_Base::Action_Q,);
-	virtual void Action_E(const FInputActionValue& Value) PURE_VIRTUAL(APlayer_Base::Action_E,);
-	virtual void Action_R(const FInputActionValue& Value) PURE_VIRTUAL(APlayer_Base::Action_R,);
-	
 public:
 	// Sets default values for this character's properties
 	APlayer_Base();

@@ -44,11 +44,12 @@ public:
 private:
 
 protected:
-	virtual void Action_MBLeft(const FInputActionValue& Value) override;
-	virtual void Action_MBRight(const FInputActionValue& Value) override;
-	virtual void Action_Q(const FInputActionValue& Value) override;
-	virtual void Action_E(const FInputActionValue& Value) override;
-	virtual void Action_R(const FInputActionValue& Value) override;
+	void PrimaryAttack(const FInputActionValue& Value);
+	void Reload(const FInputActionValue& Value);
+	void ReloadEnd(const FInputActionValue& Value);
+	void Action_Q(const FInputActionValue& Value);
+	void Action_E(const FInputActionValue& Value);
+	void Action_R(const FInputActionValue& Value);
 
 	virtual void BeginPlay() override;
 public:
