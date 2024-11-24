@@ -8,8 +8,12 @@
 
 APlayer_Revenant::APlayer_Revenant()
 {
-	SkeletalMeshPath = TEXT("/Game/ParagonRevenant/Characters/Heroes/Revenant/Skins/RavenQuill/Meshes/Revenant_RavenQuill");
-	SetSkeletalMesh();
+	SkeletalMeshPaths.AddUnique(TEXT("/Game/ParagonRevenant/Characters/Heroes/Revenant/Meshes/Revenant"));
+	SkeletalMeshPaths.AddUnique(TEXT("/Game/ParagonRevenant/Characters/Heroes/Revenant/Skins/ChronoBoss/Meshes/Revenant_ChronoBoss"));
+	SkeletalMeshPaths.AddUnique(TEXT("/Game/ParagonRevenant/Characters/Heroes/Revenant/Skins/FrostKing/Meshes/Revenant_FrostKing"));
+	SkeletalMeshPaths.AddUnique(TEXT("/Game/ParagonRevenant/Characters/Heroes/Revenant/Skins/RavenQuill/Meshes/Revenant_RavenQuill"));
+	SetSkeletalMeshes();
+	GetMesh()->SetSkeletalMesh(SkeletalMeshes[0]);
 	
 	AnimClassPath = TEXT("/Game/Bluprint/Player/Revenant/ABP_Revenant");
 	SetAnimClass();
@@ -93,7 +97,7 @@ void APlayer_Revenant::Action_R(const FInputActionValue& Value)
 void APlayer_Revenant::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	if (AM_Entrance)
 		PlayAnimMontage(AM_Entrance);
 }

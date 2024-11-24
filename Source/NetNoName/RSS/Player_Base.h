@@ -49,7 +49,10 @@ protected:
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Path")
-	FString SkeletalMeshPath;
+	TArray<FString> SkeletalMeshPaths;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkeletalMesh")
+	TArray<USkeletalMesh*> SkeletalMeshes;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Path")
 	FString AnimClassPath;
@@ -68,7 +71,7 @@ protected:
 public:
 	// Sets default values for this character's properties
 	APlayer_Base();
-	void SetSkeletalMesh();
+	void SetSkeletalMeshes();
 	void SetAnimClass();
 
 	// Called every frame

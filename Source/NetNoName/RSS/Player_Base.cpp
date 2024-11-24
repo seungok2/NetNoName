@@ -28,12 +28,15 @@ APlayer_Base::APlayer_Base()
 	CameraComp->bUsePawnControlRotation = false;
 }
 
-void APlayer_Base::SetSkeletalMesh()
+void APlayer_Base::SetSkeletalMeshes()
 {
-	ConstructorHelpers::FObjectFinder<USkeletalMesh> InitMesh(*SkeletalMeshPath);
-	if (InitMesh.Succeeded())
+	for (FString path : SkeletalMeshPaths)
 	{
-		GetMesh()->SetSkeletalMesh(InitMesh.Object);
+		ConstructorHelpers::FObjectFinder<USkeletalMesh> InitMesh(*path);
+		if (InitMesh.Succeeded())
+		{
+			SkeletalMeshes.AddUnique(InitMesh.Object);
+		}
 	}
 }
 
@@ -108,7 +111,6 @@ void APlayer_Base::Action_Look(const FInputActionValue& Value)
 void APlayer_Base::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
