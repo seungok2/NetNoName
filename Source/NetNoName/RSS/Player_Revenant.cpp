@@ -50,7 +50,7 @@ void APlayer_Revenant::PrimaryAttack(const FInputActionValue& Value)
 		if (AM_PrimaryAttack)
 		{
 			PlayAnimMontage(AM_PrimaryAttack);
-			GetWorld()->SpawnActor<AProjectile_Base>(Projectile_Primary, FTransform(Calc_AimTransform(FName("BulletPosition"), ECC_Visibility)));
+			GetWorld()->SpawnActor<AProjectile_Base>(Projectile_Primary, FTransform(Calc_AimTransform(FName("FirePosition"), ECC_Visibility)));
 		}
 	}
 }

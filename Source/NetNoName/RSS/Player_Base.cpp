@@ -145,11 +145,18 @@ FTransform APlayer_Base::Calc_AimTransform(FName socketName, ECollisionChannel t
 	FHitResult Hit;
 	FVector StartLocation = GetMesh()->GetSocketLocation(socketName);
 	FVector EndLocation = CameraComp->GetComponentLocation() + CameraComp->GetForwardVector() * range;
-	bool result = GetWorld()->LineTraceSingleByChannel(Hit, StartLocation, EndLocation, traceChannel);
-	if (result)
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(this);
+
+	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, StartLocation, EndLocation, traceChannel, params);
+	
+	if (bHit)
 	{
 		EndLocation = Hit.ImpactPoint;
 	}
+
 	FRotator LookAtRotator = UKismetMathLibrary::FindLookAtRotation(StartLocation, EndLocation);
+	// DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor(255, 0, 255), false, 5);
+	// UE_LOG(LogTemp, Warning, TEXT("Rotator : %f, %f, %f"),LookAtRotator.Yaw,LookAtRotator.Pitch,LookAtRotator.Roll);
 	return UKismetMathLibrary::MakeTransform(StartLocation, LookAtRotator);
 }
