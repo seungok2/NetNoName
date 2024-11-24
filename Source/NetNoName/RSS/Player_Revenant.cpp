@@ -50,7 +50,17 @@ void APlayer_Revenant::PrimaryAttack(const FInputActionValue& Value)
 		if (AM_PrimaryAttack)
 		{
 			PlayAnimMontage(AM_PrimaryAttack);
-			GetWorld()->SpawnActor<AProjectile_Base>(Projectile_Primary, FTransform(Calc_AimTransform(FName("FirePosition"), ECC_Visibility)));
+
+			auto SpawnedActor = GetWorld()->SpawnActor<AProjectile_Base>(Projectile_Primary, FTransform(Calc_AimTransform(FName("FirePosition"), ECC_Visibility)));
+			if (SpawnedActor)
+			{
+				SpawnedActor->SetActorEnableCollision(true);
+				UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(SpawnedActor->GetRootComponent());
+				if (PrimitiveComponent)
+				{
+					PrimitiveComponent->IgnoreActorWhenMoving(this, true);
+				}
+			}
 		}
 	}
 }
