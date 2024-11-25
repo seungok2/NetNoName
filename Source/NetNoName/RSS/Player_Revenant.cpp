@@ -4,6 +4,7 @@
 #include "Player_Revenant.h"
 #include "EnhancedInputComponent.h"
 #include "Projectile_Base.h"
+#include "Blueprint/UserWidget.h"
 #include "Components/CapsuleComponent.h"
 
 APlayer_Revenant::APlayer_Revenant()
@@ -51,22 +52,32 @@ void APlayer_Revenant::PrimaryAttack(const FInputActionValue& Value)
 	else
 	{
 		bIsAttacking = true;
-		if (AM_PrimaryAttack)
-		{
-			PlayAnimMontage(AM_PrimaryAttack);
-
-			auto SpawnedActor = GetWorld()->SpawnActor<AProjectile_Base>(Projectile_Primary, FTransform(Calc_AimTransform(FName("FirePosition"), ECC_Visibility)));
-			if (SpawnedActor)
-			{
-				SpawnedActor->SetActorEnableCollision(true);
-				UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(SpawnedActor->GetRootComponent());
-				if (PrimitiveComponent)
-				{
-					PrimitiveComponent->IgnoreActorWhenMoving(this, true);
-				}
-			}
-		}
+		FTransform AimTransForm = FTransform(Calc_AimTransform(FName("FirePosition"), ECC_Visibility));
+		ServerRPC_PrimaryAttack(AimTransForm);
 	}
+}
+
+void APlayer_Revenant::ServerRPC_PrimaryAttack_Implementation(FTransform AimTransForm)
+{
+	BroadCast_PrimaryAttack(AimTransForm);
+}
+
+void APlayer_Revenant::BroadCast_PrimaryAttack_Implementation(FTransform AimTransForm)
+{
+	if (AM_PrimaryAttack)
+	{
+		PlayAnimMontage(AM_PrimaryAttack);
+	}
+	auto SpawnedActor = GetWorld()->SpawnActor<AProjectile_Base>(Projectile_Primary, AimTransForm);
+	if (SpawnedActor)
+	{
+		SpawnedActor->SetActorEnableCollision(true);
+		UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(SpawnedActor->GetRootComponent());
+		if (PrimitiveComponent)
+		{
+			PrimitiveComponent->IgnoreActorWhenMoving(this, true);
+		}
+	}	
 }
 
 void APlayer_Revenant::Reload(const FInputActionValue& Value)
@@ -101,6 +112,11 @@ void APlayer_Revenant::BeginPlay()
 	GetMesh()->SetSkeletalMesh(SkeletalMeshes[PlayerID % SkeletalMeshes.Num()]);
 	if (AM_Entrance)
 		PlayAnimMontage(AM_Entrance);
+
+	if(IsLocallyControlled() == false) return;
+
+	CrossHairWidget = Cast<UUserWidget>( CreateWidget(GetWorld(), CrossHairWidgetClass) );
+	CrossHairWidget->AddToViewport();
 }
 
 void APlayer_Revenant::Tick(float DeltaTime)
