@@ -1,8 +1,8 @@
 # Visual Studio 2015 user specific files
-.vs/
+.vs/*
 
 # Ridar user specific files
-.idea/
+.idea/*
 
 # Compiled Object files
 *.slo
@@ -79,7 +79,7 @@ Content/Paragon*
 Content/Level/Test*
 Content/FXVarietyPack*
 Content/KTP_Effect*
-Content/ParagonNarbash*
 Content/Polar*
 Content/Junkyard*
 Content/ModularSciFi*
+
