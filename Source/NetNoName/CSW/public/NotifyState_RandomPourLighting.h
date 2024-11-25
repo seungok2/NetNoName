@@ -10,7 +10,7 @@
  * 
  */
 class UNiagaraSystem;
-
+class AParticleActor;
 UCLASS()
 class NETNONAME_API UNotifyState_RandomPourLighting : public UAnimNotifyState
 {
@@ -26,8 +26,12 @@ protected:
 
 
 public:
+	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
+	TArray<UParticleSystem*> lightningEffects;*/
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
-	TArray<UParticleSystem*> lightningEffects;
+	TArray<TSubclassOf<AParticleActor>> particleActors;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
 	UNiagaraSystem* magicCircle;
