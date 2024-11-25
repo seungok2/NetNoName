@@ -4,8 +4,10 @@
 #include "Player_Base.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "GM_NoName.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 APlayer_Base::APlayer_Base()
@@ -27,12 +29,15 @@ APlayer_Base::APlayer_Base()
 	CameraComp->bUsePawnControlRotation = false;
 }
 
-void APlayer_Base::SetSkeletalMesh()
+void APlayer_Base::SetSkeletalMeshes()
 {
-	ConstructorHelpers::FObjectFinder<USkeletalMesh> InitMesh(*SkeletalMeshPath);
-	if (InitMesh.Succeeded())
+	for (FString path : SkeletalMeshPaths)
 	{
-		GetMesh()->SetSkeletalMesh(InitMesh.Object);
+		ConstructorHelpers::FObjectFinder<USkeletalMesh> InitMesh(*path);
+		if (InitMesh.Succeeded())
+		{
+			SkeletalMeshes.AddUnique(InitMesh.Object);
+		}
 	}
 }
 
@@ -53,6 +58,13 @@ void APlayer_Base::SetAnimClass()
 void APlayer_Base::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (HasAuthority())
+	{
+		AGM_NoName* gameMode = Cast<AGM_NoName>(GetWorld()->GetAuthGameMode());
+		gameMode->AddPlayer(this);
+		PlayerID = gameMode->Players.Find(this);
+	}
 	
 }
 
@@ -107,14 +119,13 @@ void APlayer_Base::Action_Look(const FInputActionValue& Value)
 void APlayer_Base::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
 void APlayer_Base::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
+	
 	if(APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
 		// Enhanced Input Subsystem 가져오기
@@ -126,7 +137,7 @@ void APlayer_Base::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 			Subsystem->AddMappingContext(InputMappingContext, 0);
 		}
 	}
-	// GetController<APlayerController>()->PlayerCameraManager->ViewPitchMin = -45.0f;
+	 GetController<APlayerController>()->PlayerCameraManager->ViewPitchMin = -45.0f;
 	// GetController<APlayerController>()->PlayerCameraManager->ViewPitchMax = 15.0f;
 	
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
@@ -139,4 +150,31 @@ void APlayer_Base::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	}
 }
 
+FTransform APlayer_Base::Calc_AimTransform(FName socketName, ECollisionChannel traceChannel ,float range)
+{
+	FHitResult Hit;
+	FVector FirePosition = GetMesh()->GetSocketLocation(socketName);
+	FVector StartLocation = CameraComp->GetComponentLocation();
+	FVector EndLocation = CameraComp->GetComponentLocation() + CameraComp->GetForwardVector() * range;
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(this);
 
+	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, StartLocation, EndLocation, traceChannel, params);
+	
+	if (bHit)
+	{
+		EndLocation = Hit.ImpactPoint;
+	}
+
+	FRotator LookAtRotator = UKismetMathLibrary::FindLookAtRotation(FirePosition, EndLocation);
+	// DrawDebugPoint(GetWorld(), EndLocation, 10, FColor::Red, false, 5);
+	// DrawDebugLine(GetWorld(), FirePosition, EndLocation, FColor(255, 0, 255), false, 5);
+	return UKismetMathLibrary::MakeTransform(FirePosition, LookAtRotator);
+}
+
+void APlayer_Base::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(APlayer_Base, PlayerID);
+}

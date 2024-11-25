@@ -32,20 +32,40 @@ public:
 	
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
 	UAnimMontage* AM_PrimaryAttack;
+
+	UPROPERTY(EditAnywhere, Blueprintable, Category = Projectile)
+	TSubclassOf<class AProjectile_Base> Projectile_Primary;
+
+	UPROPERTY(VisibleAnywhere, Category = Projectile)
+	int8 MaxPrimaryProjectileCount = 4;
+
+	UPROPERTY(EditAnywhere, Blueprintable, Category = Projectile)
+	int8 CurrentPrimaryProjectileCount = 4;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UUserWidget> CrossHairWidgetClass;
+	UPROPERTY()
+	class UUserWidget* CrossHairWidget;
 private:
 
 protected:
-	virtual void Action_MBLeft(const FInputActionValue& Value) override;
-	virtual void Action_MBRight(const FInputActionValue& Value) override;
-	virtual void Action_Q(const FInputActionValue& Value) override;
-	virtual void Action_E(const FInputActionValue& Value) override;
-	virtual void Action_R(const FInputActionValue& Value) override;
+	void PrimaryAttack(const FInputActionValue& Value);
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_PrimaryAttack(FTransform AimTransForm);
+	UFUNCTION(NetMulticast, Reliable)
+	void BroadCast_PrimaryAttack(FTransform AimTransForm);	
+	
+	void Reload(const FInputActionValue& Value);
+	void ReloadEnd(const FInputActionValue& Value);
+	void Action_Q(const FInputActionValue& Value);
+	void Action_E(const FInputActionValue& Value);
+	void Action_R(const FInputActionValue& Value);
 
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 public:
 	APlayer_Revenant();
-	
-	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	
 	UFUNCTION(BlueprintCallable)
 	void ResetCombo();
