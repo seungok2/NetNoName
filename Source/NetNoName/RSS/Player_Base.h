@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "GameFramework/Character.h"
+#include "Net/UnrealNetwork.h"
 #include "Player_Base.generated.h"
 
 class UInputAction;
@@ -46,15 +47,17 @@ protected:
 	UInputAction* IA_E;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* IA_R;
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated,Category = Player)
+	int32 PlayerID;
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Path")
-	FString SkeletalMeshPath;
+	TArray<FString> SkeletalMeshPaths;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkeletalMesh")
+	TArray<USkeletalMesh*> SkeletalMeshes;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Path")
 	FString AnimClassPath;
-
-	
 private:
 	
 protected:
@@ -65,16 +68,10 @@ protected:
 	virtual void Action_Jump(const FInputActionValue& Value);
 	virtual void Action_JumpEnd(const FInputActionValue& Value);
 	virtual void Action_Look(const FInputActionValue& Value);
-	virtual void Action_MBLeft(const FInputActionValue& Value) PURE_VIRTUAL(APlayer_Base::Action_MBLeft,);
-	virtual void Action_MBRight(const FInputActionValue& Value) PURE_VIRTUAL(APlayer_Base::Action_MBRight,);
-	virtual void Action_Q(const FInputActionValue& Value) PURE_VIRTUAL(APlayer_Base::Action_Q,);
-	virtual void Action_E(const FInputActionValue& Value) PURE_VIRTUAL(APlayer_Base::Action_E,);
-	virtual void Action_R(const FInputActionValue& Value) PURE_VIRTUAL(APlayer_Base::Action_R,);
-	
 public:
 	// Sets default values for this character's properties
 	APlayer_Base();
-	void SetSkeletalMesh();
+	void SetSkeletalMeshes();
 	void SetAnimClass();
 
 	// Called every frame
@@ -82,5 +79,7 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
-};
 
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	FTransform Calc_AimTransform(FName socketName, ECollisionChannel traceChannel, float range = 10000);
+};
