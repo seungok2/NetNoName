@@ -29,6 +29,8 @@ void AEnemy::BeginPlay()
 	Super::BeginPlay();
 	
 	anim = Cast<UEnemyAnim>(this->GetMesh()->GetAnimInstance());
+	
+	// 스폰, 시작시 start Motion 실행
 	mState = EEnemyState::Start;
 	PlayAnimMontage(startMotion);
 }
@@ -120,7 +122,7 @@ void AEnemy::ChangeState()
 	case EEnemyState::Attack:
 		AttackState();
 		break;
-	case EEnemyState::Stun:
+	case EEnemyState::Sturn:
 		StunState();
 		break;
 	case EEnemyState::Die:
@@ -139,15 +141,6 @@ void AEnemy::StratState()
 
 void AEnemy::IdleState()
 {
-	//currentTime += GetWorld()->DeltaTimeSeconds;
-	//if (currentTime >= idleDelayTime)
-	//{
-	//	mState = EEnemyState::Attack;
-
-	//	currentTime = 0;
-
-	//	anim->animState = mState;
-	//}
 	
 	if (anim->Montage_IsPlaying(currentMontage))
 	{
@@ -179,7 +172,7 @@ void AEnemy::IdleState()
 
 void AEnemy::MoveState()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Move"));
+	//UE_LOG(LogTemp, Warning, TEXT("Move"));
 	anim->animState = EEnemyState::Move;
 
 	targetPlayer = FindClosestPlayer();
@@ -189,11 +182,13 @@ void AEnemy::MoveState()
 		float dist = FVector::Distance(targetPlayer->GetActorLocation(), GetActorLocation());
 		if (dist <= attackRang)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("range in target"));
 			anim->animState = EEnemyState::Idle;
-			mState = EEnemyState::Idle;
+			mState = EEnemyState::Attack;
 		}
 		else
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Not range in target"));
 			FVector direction = (targetPlayer->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 			// 방향과 크기(속도 비율)
 			AddMovementInput(direction, 1.0f); 

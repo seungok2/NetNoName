@@ -13,7 +13,7 @@ enum class EEnemyState : uint8
 	Idle,
 	Move,
 	Attack,
-	Stun,
+	Sturn,
 	Die
 };
 
