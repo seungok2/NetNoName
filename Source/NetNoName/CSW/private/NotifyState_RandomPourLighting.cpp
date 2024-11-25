@@ -8,6 +8,8 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 
+#include "ParticleActor.h"
+
 void UNotifyState_RandomPourLighting::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
 	me = MeshComp->GetOwner();
@@ -64,9 +66,11 @@ void UNotifyState_RandomPourLighting::NotifyTick(USkeletalMeshComponent* MeshCom
 				return;
 
 			// ÃµµÕ Ä¡°í
-			int32 Randomindex = FMath::RandRange(0, lightningEffects.Num() - 1);
+			int32 Randomindex = FMath::RandRange(0, particleActors.Num() - 1);
 
-			UGameplayStatics::SpawnEmitterAtLocation(world, lightningEffects[Randomindex], spawnPos[magicIndex], FRotator::ZeroRotator);
+			/*UGameplayStatics::SpawnEmitterAtLocation(world, lightningEffects[Randomindex], spawnPos[magicIndex], FRotator::ZeroRotator);*/
+
+			world->SpawnActor<AParticleActor>(particleActors[Randomindex], spawnPos[magicIndex], FRotator::ZeroRotator);
 
 			magicIndex++;
 		}

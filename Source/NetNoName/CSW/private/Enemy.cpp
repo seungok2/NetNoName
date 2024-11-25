@@ -3,6 +3,7 @@
 #include "Enemy.h"
 #include "Kismet\GameplayStatics.h"
 #include "EnemyAnim.h"
+#include "NetNoName\RSS\Player_Revenant.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -17,8 +18,9 @@ AEnemy::AEnemy()
 		GetMesh()->SetRelativeRotation(FRotator(0, -90, 0));
 	}
 
-	mState = EEnemyState::Idle;
 	attackIndex = 0;
+	currentMontage = nullptr;
+	
 }
 
 // Called when the game starts or when spawned
@@ -27,7 +29,8 @@ void AEnemy::BeginPlay()
 	Super::BeginPlay();
 	
 	anim = Cast<UEnemyAnim>(this->GetMesh()->GetAnimInstance());
-	currentMontage = nullptr;
+	mState = EEnemyState::Start;
+	PlayAnimMontage(startMotion);
 }
 
 // Called every frame
@@ -43,6 +46,59 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+APlayer_Revenant* AEnemy::FindClosestPlayer()
+{
+	TArray<AActor*> allActors;
+
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayer_Revenant::StaticClass(), allActors);
+
+	APlayer_Revenant* closestPlayer = nullptr;
+	float closestDist = std::numeric_limits<float>::max();
+
+	for (AActor* actor : allActors)
+	{
+		APlayer_Revenant* player = Cast<APlayer_Revenant>(actor);
+	
+		if (player)
+		{
+			float dist = FVector::Distance(player->GetActorLocation(), GetActorLocation());
+			if (dist < closestDist)
+			{
+				closestDist = dist;
+				closestPlayer = player;
+			}
+		}
+	}
+
+	return closestPlayer;
+}
+
+APlayer_Revenant* AEnemy::FindFarthestPlayer()
+{
+	TArray<AActor*> allActors;
+
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayer_Revenant::StaticClass(), allActors);
+
+	APlayer_Revenant* farthestPlayer = nullptr;
+	float farthestDist = std::numeric_limits<float>::min();
+	for (AActor* actor : allActors)
+	{
+		APlayer_Revenant* player = Cast<APlayer_Revenant>(actor);
+
+		if (player)
+		{
+			float dist = FVector::Distance(player->GetActorLocation(), GetActorLocation());
+			if (dist > farthestDist)
+			{
+				farthestDist = dist;
+				farthestPlayer = player;
+			}
+		}
+	}
+
+	return farthestPlayer;
 }
 
 void AEnemy::ChangeState()
@@ -77,6 +133,8 @@ void AEnemy::ChangeState()
 
 void AEnemy::StratState()
 {
+	if (anim->IsAnyMontagePlaying())
+		return;
 }
 
 void AEnemy::IdleState()
@@ -121,6 +179,29 @@ void AEnemy::IdleState()
 
 void AEnemy::MoveState()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Move"));
+	anim->animState = EEnemyState::Move;
+
+	targetPlayer = FindClosestPlayer();
+
+	if (targetPlayer)
+	{
+		float dist = FVector::Distance(targetPlayer->GetActorLocation(), GetActorLocation());
+		if (dist <= attackRang)
+		{
+			anim->animState = EEnemyState::Idle;
+			mState = EEnemyState::Idle;
+		}
+		else
+		{
+			FVector direction = (targetPlayer->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+			// 방향과 크기(속도 비율)
+			AddMovementInput(direction, 1.0f); 
+			// 방향 벡터를 회전값으로 변환
+			FRotator newRotation = direction.Rotation();
+			SetActorRotation(newRotation);
+		}
+	}
 }
 
 void AEnemy::AttackState()
@@ -130,7 +211,6 @@ void AEnemy::AttackState()
 	case EAttackState::Combo:
 		// 몽타주 재생
 		currentMontage = Combo;
-		
 		// 다음 패턴
 		UE_LOG(LogTemp, Warning, TEXT("Combo"));
 		attackIndex++;

@@ -29,6 +29,7 @@ enum class EAttackState : uint8
 
 
 class UEnemyAnim;
+class APlayer_Revenant;
 
 UCLASS()
 class NETNONAME_API AEnemy : public ACharacter
@@ -64,6 +65,8 @@ public:
 	TArray<EAttackState> attackPattern;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+	UAnimMontage* startMotion;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	UAnimMontage* Combo;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	UAnimMontage* wideArea1;
@@ -72,12 +75,22 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	UAnimMontage* InstantDeath;
 
+
 	UPROPERTY()
 	UEnemyAnim* anim;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+	float attackRang = 100.0f;
+
+
+	APlayer_Revenant* FindClosestPlayer();
+	APlayer_Revenant* FindFarthestPlayer();
 
 
 private:
 	UAnimMontage* currentMontage;
+
+	APlayer_Revenant* targetPlayer;
 
 private:
 
