@@ -153,7 +153,8 @@ void APlayer_Base::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 FTransform APlayer_Base::Calc_AimTransform(FName socketName, ECollisionChannel traceChannel ,float range)
 {
 	FHitResult Hit;
-	FVector StartLocation = GetMesh()->GetSocketLocation(socketName);
+	FVector FirePosition = GetMesh()->GetSocketLocation(socketName);
+	FVector StartLocation = CameraComp->GetComponentLocation();
 	FVector EndLocation = CameraComp->GetComponentLocation() + CameraComp->GetForwardVector() * range;
 	FCollisionQueryParams params;
 	params.AddIgnoredActor(this);
@@ -165,10 +166,10 @@ FTransform APlayer_Base::Calc_AimTransform(FName socketName, ECollisionChannel t
 		EndLocation = Hit.ImpactPoint;
 	}
 
-	FRotator LookAtRotator = UKismetMathLibrary::FindLookAtRotation(StartLocation, EndLocation);
-	// DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor(255, 0, 255), false, 5);
-	// UE_LOG(LogTemp, Warning, TEXT("Rotator : %f, %f, %f"),LookAtRotator.Yaw,LookAtRotator.Pitch,LookAtRotator.Roll);
-	return UKismetMathLibrary::MakeTransform(StartLocation, LookAtRotator);
+	FRotator LookAtRotator = UKismetMathLibrary::FindLookAtRotation(FirePosition, EndLocation);
+	// DrawDebugPoint(GetWorld(), EndLocation, 10, FColor::Red, false, 5);
+	// DrawDebugLine(GetWorld(), FirePosition, EndLocation, FColor(255, 0, 255), false, 5);
+	return UKismetMathLibrary::MakeTransform(FirePosition, LookAtRotator);
 }
 
 void APlayer_Base::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const

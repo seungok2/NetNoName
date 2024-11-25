@@ -41,10 +41,20 @@ public:
 
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Projectile)
 	int8 CurrentPrimaryProjectileCount = 4;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UUserWidget> CrossHairWidgetClass;
+	UPROPERTY()
+	class UUserWidget* CrossHairWidget;
 private:
 
 protected:
 	void PrimaryAttack(const FInputActionValue& Value);
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_PrimaryAttack(FTransform AimTransForm);
+	UFUNCTION(NetMulticast, Reliable)
+	void BroadCast_PrimaryAttack(FTransform AimTransForm);	
+	
 	void Reload(const FInputActionValue& Value);
 	void ReloadEnd(const FInputActionValue& Value);
 	void Action_Q(const FInputActionValue& Value);
