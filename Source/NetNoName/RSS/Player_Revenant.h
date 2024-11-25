@@ -52,10 +52,10 @@ protected:
 	void Action_R(const FInputActionValue& Value);
 
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 public:
 	APlayer_Revenant();
-	
-	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	
 	UFUNCTION(BlueprintCallable)
 	void ResetCombo();

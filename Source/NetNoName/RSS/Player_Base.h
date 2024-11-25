@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "GameFramework/Character.h"
+#include "Net/UnrealNetwork.h"
 #include "Player_Base.generated.h"
 
 class UInputAction;
@@ -46,7 +47,8 @@ protected:
 	UInputAction* IA_E;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* IA_R;
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated,Category = Player)
+	int32 PlayerID;
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Path")
 	TArray<FString> SkeletalMeshPaths;
@@ -56,8 +58,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Path")
 	FString AnimClassPath;
-
-	
 private:
 	
 protected:
@@ -79,6 +79,7 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	FTransform Calc_AimTransform(FName socketName, ECollisionChannel traceChannel, float range = 10000);
 };
-

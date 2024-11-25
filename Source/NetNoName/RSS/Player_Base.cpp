@@ -4,6 +4,7 @@
 #include "Player_Base.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "GM_NoName.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -57,6 +58,13 @@ void APlayer_Base::SetAnimClass()
 void APlayer_Base::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (HasAuthority())
+	{
+		AGM_NoName* gameMode = Cast<AGM_NoName>(GetWorld()->GetAuthGameMode());
+		gameMode->AddPlayer(this);
+		PlayerID = gameMode->Players.Find(this);
+	}
 	
 }
 
@@ -117,7 +125,7 @@ void APlayer_Base::Tick(float DeltaTime)
 void APlayer_Base::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
+	
 	if(APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
 		// Enhanced Input Subsystem 가져오기
@@ -161,4 +169,11 @@ FTransform APlayer_Base::Calc_AimTransform(FName socketName, ECollisionChannel t
 	// DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor(255, 0, 255), false, 5);
 	// UE_LOG(LogTemp, Warning, TEXT("Rotator : %f, %f, %f"),LookAtRotator.Yaw,LookAtRotator.Pitch,LookAtRotator.Roll);
 	return UKismetMathLibrary::MakeTransform(StartLocation, LookAtRotator);
+}
+
+void APlayer_Base::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(APlayer_Base, PlayerID);
 }

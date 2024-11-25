@@ -97,9 +97,15 @@ void APlayer_Revenant::Action_R(const FInputActionValue& Value)
 void APlayer_Revenant::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	GetMesh()->SetSkeletalMesh(SkeletalMeshes[PlayerID % SkeletalMeshes.Num()]);
 	if (AM_Entrance)
 		PlayAnimMontage(AM_Entrance);
+}
+
+void APlayer_Revenant::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 }
 
 void APlayer_Revenant::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
