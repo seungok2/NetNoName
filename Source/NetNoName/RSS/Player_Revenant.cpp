@@ -10,7 +10,7 @@ APlayer_Revenant::APlayer_Revenant()
 {
 	SkeletalMeshPaths.AddUnique(TEXT("/Game/ParagonRevenant/Characters/Heroes/Revenant/Meshes/Revenant"));
 	SkeletalMeshPaths.AddUnique(TEXT("/Game/ParagonRevenant/Characters/Heroes/Revenant/Skins/ChronoBoss/Meshes/Revenant_ChronoBoss"));
-	SkeletalMeshPaths.AddUnique(TEXT("/Game/ParagonRevenant/Characters/Heroes/Revenant/Skins/FrostKing/Meshes/Revenant_FrostKing"));
+	/*SkeletalMeshPaths.AddUnique(TEXT("/Game/ParagonRevenant/Characters/Heroes/Revenant/Skins/FrostKing/Meshes/Revenant_FrostKing"));*/
 	SkeletalMeshPaths.AddUnique(TEXT("/Game/ParagonRevenant/Characters/Heroes/Revenant/Skins/RavenQuill/Meshes/Revenant_RavenQuill"));
 	SetSkeletalMeshes();
 	GetMesh()->SetSkeletalMesh(SkeletalMeshes[0]);

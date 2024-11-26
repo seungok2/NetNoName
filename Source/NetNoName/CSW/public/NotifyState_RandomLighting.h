@@ -28,6 +28,9 @@ public:
 	//TArray<UParticleSystem*> lightningEffects;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
+	TSubclassOf<AParticleActor> drumParticle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
 	TArray<TSubclassOf<AParticleActor>> particleActors;
 	
 

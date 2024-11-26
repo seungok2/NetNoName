@@ -16,7 +16,22 @@ void UNotifyState_Start::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequ
 
     FVector pos = my->GetActorLocation();
     FRotator rot = FRotator::ZeroRotator;
-    pos.Z -= 180.0f;
+	
+	FHitResult hitInfo;
+	FVector start = pos + FVector(0, 0, 5000.0f);
+	FVector end = pos + FVector(0, 0, -5000.0f);
+
+	bool bhit = GetWorld()->LineTraceSingleByChannel(hitInfo, start, end, ECC_Visibility);
+
+	if (bhit)
+	{
+		pos.Z = hitInfo.Location.Z;
+	}
+	else
+	{
+		pos.Z -= 260.0f;
+	}
+
 
     my->GetWorld()->SpawnActor<AParticleActor>(partcleActor,pos, rot);
 

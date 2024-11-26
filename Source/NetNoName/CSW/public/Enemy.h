@@ -64,6 +64,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	TArray<EAttackState> attackPattern;
 
+	// 몽타주
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	UAnimMontage* startMotion;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
@@ -74,7 +75,10 @@ public:
 	UAnimMontage* wideArea2;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	UAnimMontage* InstantDeath;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+	UAnimMontage* Sturn;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+	UAnimMontage* Die;
 
 	UPROPERTY()
 	UEnemyAnim* anim;
@@ -82,7 +86,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	float attackRang = 100.0f;
 
-
+	// 가까운 Character 찾기 -> APlayer_Revenant->player_Base 
 	APlayer_Revenant* FindClosestPlayer();
 	APlayer_Revenant* FindFarthestPlayer();
 

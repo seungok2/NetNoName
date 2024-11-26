@@ -24,6 +24,7 @@ void UNotifyState_RandomLighting::NotifyBegin(USkeletalMeshComponent* MeshComp, 
 
 	spawnPos.Empty();
 
+
 	if (world)
 	{
 		for (int32 i = 0; i < spawnNum; i++)
@@ -33,7 +34,21 @@ void UNotifyState_RandomLighting::NotifyBegin(USkeletalMeshComponent* MeshComp, 
 
 			// 스폰 위치 계산 = 현재 위치 + 방향*거리
 			spawnPos.Add(CenterPos + RandomDir * RandomDis);
-			spawnPos[i].Z = 0.1f;
+			
+			FHitResult hitInfo;
+			FVector start = spawnPos[i] + FVector(0, 0, 5000.0f);
+			FVector end = spawnPos[i] + FVector(0, 0, -5000.0f);
+
+			bool bhit = world->LineTraceSingleByChannel(hitInfo, start, end, ECC_Visibility);
+
+			if (bhit)
+			{
+				spawnPos[i].Z = hitInfo.Location.Z + 0.1f;
+			}
+			else
+			{
+				spawnPos[i].Z = CenterPos.Z - 260.0f;
+			}
 
 			UNiagaraFunctionLibrary::SpawnSystemAtLocation(world, magicCircle, spawnPos[i], FRotator::ZeroRotator);
 
@@ -56,6 +71,12 @@ void UNotifyState_RandomLighting::NotifyEnd(USkeletalMeshComponent* MeshComp, UA
 	FVector CenterPos = me->GetActorLocation();
 
 	UWorld* world = me->GetWorld();
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = me;
+
+	world->SpawnActor<AParticleActor>(drumParticle, CenterPos, FRotator::ZeroRotator, SpawnParams);
+
 
 	if (world)
 	{

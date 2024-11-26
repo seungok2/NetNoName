@@ -182,18 +182,19 @@ void AEnemy::MoveState()
 		float dist = FVector::Distance(targetPlayer->GetActorLocation(), GetActorLocation());
 		if (dist <= attackRang)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("range in target"));
+			//UE_LOG(LogTemp, Warning, TEXT("range in target"));
 			anim->animState = EEnemyState::Idle;
 			mState = EEnemyState::Attack;
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Not range in target"));
+			//UE_LOG(LogTemp, Warning, TEXT("Not range in target"));
 			FVector direction = (targetPlayer->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 			// 방향과 크기(속도 비율)
 			AddMovementInput(direction, 1.0f); 
 			// 방향 벡터를 회전값으로 변환
 			FRotator newRotation = direction.Rotation();
+			newRotation.Pitch = 0.0f;
 			SetActorRotation(newRotation);
 		}
 	}
@@ -244,8 +245,25 @@ void AEnemy::AttackState()
 
 void AEnemy::StunState()
 {
+	// 몽타주 재생
+	//PlayAnimMontage(Sturn);
+	// 몽타주 재생과 동시에 유령이 주의로 나타나면서 스턴 상태
+
+	// 다시 Idle 상태로 -> 전투
+	// 타이머? 또는 딜레이?? 불값? 
+	// if(bSturn)
+	//  play
+	//  bStrun = false
+	// else
+	//   if( 딜레이 )
+	//      mstate = idel 
 }
 
 void AEnemy::DieState()
 {
+	// 죽는 몽타주 재생~ 
+	//PlayAnimMontage(Die);
+
+	// 죽고 난 뒤, 사라지는 모션
+	
 }
