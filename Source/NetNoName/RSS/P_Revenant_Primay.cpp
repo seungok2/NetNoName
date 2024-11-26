@@ -37,7 +37,7 @@ void AP_Revenant_Primay::OnComponentHit(UPrimitiveComponent* HitComponent, AActo
 
 void AP_Revenant_Primay::Broadcast_HitProcess_Implementation(const FHitResult& Hit)
 {
-	UGameplayStatics::ApplyDamage(Hit.GetActor(), 5.0f, GetInstigatorController(), this, UDamageType::StaticClass());
+	UGameplayStatics::ApplyDamage(Hit.GetActor(), HitDamage, GetInstigatorController(), this, UDamageType::StaticClass());
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Particle_Hit_World, Hit.ImpactPoint, UKismetMathLibrary::MakeRotFromX(Hit.ImpactNormal));
 
 	Destroy();

@@ -18,15 +18,18 @@ APlayer_Base::APlayer_Base()
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->SetupAttachment(RootComponent);
 	SpringArmComp->SetRelativeLocationAndRotation(
-		FVector(0.0f, 0.0f, 70.0f),
-		FRotator(0, 70, 90));
-	SpringArmComp->TargetArmLength = 300;
-	SpringArmComp->bUsePawnControlRotation = true;
-	SpringArmComp->SocketOffset = FVector(0.0f, 60.0f, 0.0f);
-
+	FVector(0.0f, 75.0f, 100.0f),  // 캐릭터의 약간 뒤쪽 위에 배치
+	FRotator(-10.0f, 0.0f, 0.0f)); // 약간 아래를 바라보도록 회전
+	SpringArmComp->TargetArmLength = 550.0f; // 카메라 거리 설정
+	SpringArmComp->bUsePawnControlRotation = true; // 캐릭터 회전과 연동
+	SpringArmComp->bDoCollisionTest = true;       // 충돌 방지 활성화
+	// 카메라 오프셋 설정
+	SpringArmComp->SocketOffset = FVector(0.0f, 50.0f, 20.0f); // 약간 오른쪽으로 오프셋 적용
+	
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringArmComp, USpringArmComponent::SocketName);
-	CameraComp->bUsePawnControlRotation = false;
+	CameraComp->FieldOfView = 105.0f; // FOV를 넓게 설정해 액션과 몰입감을 높임
+	CameraComp->bUsePawnControlRotation = false; // 카메라가 독립적으로 회전하지 않도록 설정
 }
 
 void APlayer_Base::SetSkeletalMeshes()
