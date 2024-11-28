@@ -83,6 +83,7 @@ void APlayer_Revenant::Reload()
 	if (CurrentPrimaryProjectileCount == MaxPrimaryProjectileCount) return;
 
 	CurrentPrimaryProjectileCount = MaxPrimaryProjectileCount;
+	bIsAttacking = true;
 	ServerRPC_Reload();
 }
 
