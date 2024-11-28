@@ -32,31 +32,6 @@ APlayer_Base::APlayer_Base()
 	CameraComp->bUsePawnControlRotation = false; // 카메라가 독립적으로 회전하지 않도록 설정
 }
 
-void APlayer_Base::SetSkeletalMeshes()
-{
-	for (FString path : SkeletalMeshPaths)
-	{
-		ConstructorHelpers::FObjectFinder<USkeletalMesh> InitMesh(*path);
-		if (InitMesh.Succeeded())
-		{
-			SkeletalMeshes.AddUnique(InitMesh.Object);
-		}
-	}
-}
-
-void APlayer_Base::SetAnimClass()
-{
-	ConstructorHelpers::FClassFinder<UAnimInstance> AnimBP(*AnimClassPath);
-	if (AnimBP.Succeeded())
-	{
-		UE_LOG(LogTemp, Display, TEXT("AnimBP.Succeeded"));
-		if (AnimBP.Class)
-		{
-			GetMesh()->SetAnimClass(AnimBP.Class);
-		}
-	}
-}
-
 // Called when the game starts or when spawned
 void APlayer_Base::BeginPlay()
 {
