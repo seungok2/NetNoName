@@ -24,13 +24,20 @@ AP_Revenant_Primay::AP_Revenant_Primay()
 }
 
 void AP_Revenant_Primay::OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+                                        UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	Super::OnComponentHit(HitComponent, OtherActor, OtherComp, NormalImpulse, Hit);
 
+	if (!HasAuthority()) return;
+	
 	if (OtherActor == nullptr || OtherComp == nullptr) return;
 	
-	UGameplayStatics::ApplyDamage(OtherActor, 5.0f, GetInstigatorController(), this, UDamageType::StaticClass());
+	Broadcast_HitProcess(Hit);
+}
+
+void AP_Revenant_Primay::Broadcast_HitProcess_Implementation(const FHitResult& Hit)
+{
+	UGameplayStatics::ApplyDamage(Hit.GetActor(), HitDamage, GetInstigatorController(), this, UDamageType::StaticClass());
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Particle_Hit_World, Hit.ImpactPoint, UKismetMathLibrary::MakeRotFromX(Hit.ImpactNormal));
 
 	Destroy();

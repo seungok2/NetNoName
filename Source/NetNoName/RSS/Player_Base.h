@@ -50,14 +50,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated,Category = Player)
 	int32 PlayerID;
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Path")
-	TArray<FString> SkeletalMeshPaths;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkeletalMesh")
-	TArray<USkeletalMesh*> SkeletalMeshes;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Path")
-	FString AnimClassPath;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SkeletalMesh")
+	TArray<USkeletalMesh*> Skins;
 private:
 	
 protected:
@@ -71,8 +65,6 @@ protected:
 public:
 	// Sets default values for this character's properties
 	APlayer_Base();
-	void SetSkeletalMeshes();
-	void SetAnimClass();
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
