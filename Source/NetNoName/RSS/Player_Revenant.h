@@ -17,6 +17,9 @@ class NETNONAME_API APlayer_Revenant : public APlayer_Base
 private:
 
 protected:
+	UPROPERTY(Replicated ,EditAnywhere, BlueprintReadOnly, Category = Attack)
+	bool bIsCombatMode = false;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attack)
 	bool bIsAttacking = false;
 	
@@ -68,6 +71,7 @@ protected:
 	void Action_E();
 	void Action_R();
 
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;

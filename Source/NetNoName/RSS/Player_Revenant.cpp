@@ -105,7 +105,7 @@ void APlayer_Revenant::BroadCast_Reload_Implementation()
 
 void APlayer_Revenant::Action_Q()
 {
-	
+	bIsCombatMode = !bIsCombatMode;
 }
 
 void APlayer_Revenant::Action_E()
@@ -116,6 +116,13 @@ void APlayer_Revenant::Action_E()
 void APlayer_Revenant::Action_R()
 {
 	
+}
+
+void APlayer_Revenant::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(APlayer_Revenant,bIsCombatMode);
 }
 
 void APlayer_Revenant::BeginPlay()
