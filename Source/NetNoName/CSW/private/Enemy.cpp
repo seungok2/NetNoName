@@ -31,8 +31,11 @@ void AEnemy::BeginPlay()
 	anim = Cast<UEnemyAnim>(this->GetMesh()->GetAnimInstance());
 	
 	// 스폰, 시작시 start Motion 실행
-	mState = EEnemyState::Start;
-	PlayAnimMontage(startMotion);
+	isDie = true;
+	mState = EEnemyState::Die;
+	//PlayAnimMontage(startMotion);
+
+	currentHp = enemyHp;
 }
 
 // Called every frame
@@ -111,7 +114,7 @@ void AEnemy::ChangeState()
 	switch (mState)
 	{
 	case EEnemyState::Start:
-		StratState();
+		AniState(&isStart, startMotion);
 		break;
 	case EEnemyState::Idle:
 		IdleState();
@@ -122,21 +125,15 @@ void AEnemy::ChangeState()
 	case EEnemyState::Attack:
 		AttackState();
 		break;
-	case EEnemyState::Sturn:
-		StunState();
+	case EEnemyState::Stun:
+		AniState(&isStun, Stun);
 		break;
 	case EEnemyState::Die:
-		DieState();
+		AniState(&isDie, Die);
 		break;
 	default:
 		break;
 	}
-}
-
-void AEnemy::StratState()
-{
-	if (anim->IsAnyMontagePlaying())
-		return;
 }
 
 void AEnemy::IdleState()
@@ -243,27 +240,15 @@ void AEnemy::AttackState()
 	mState = EEnemyState::Idle;
 }
 
-void AEnemy::StunState()
+
+void AEnemy::AniState(bool* isState, UAnimMontage* playMotion)
 {
-	// 몽타주 재생
-	//PlayAnimMontage(Sturn);
-	// 몽타주 재생과 동시에 유령이 주의로 나타나면서 스턴 상태
-
-	// 다시 Idle 상태로 -> 전투
-	// 타이머? 또는 딜레이?? 불값? 
-	// if(bSturn)
-	//  play
-	//  bStrun = false
-	// else
-	//   if( 딜레이 )
-	//      mstate = idel 
-}
-
-void AEnemy::DieState()
-{
-	// 죽는 몽타주 재생~ 
-	//PlayAnimMontage(Die);
-
-	// 죽고 난 뒤, 사라지는 모션
-	
+	if (*isState == true)
+	{
+		*isState = false;
+		PlayAnimMontage(playMotion);
+		UE_LOG(LogTemp, Warning, TEXT("aniState"));
+	}
+	else
+		return;
 }

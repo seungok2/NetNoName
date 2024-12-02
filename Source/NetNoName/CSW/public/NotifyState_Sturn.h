@@ -4,34 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
-#include "NotifyState_Start.generated.h"
+#include "NotifyState_Sturn.generated.h"
 
 /**
  * 
  */
-class AEnemy;
-class AParticleActor;
-
 UCLASS()
-class NETNONAME_API UNotifyState_Start : public UAnimNotifyState
+class NETNONAME_API UNotifyState_Sturn : public UAnimNotifyState
 {
 	GENERATED_BODY()
 	
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "effect")
-	TSubclassOf<AParticleActor> partcleActor;
-	
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UEnemyHpBarUI> enemyHpBarUIFactory;
-
-
 protected:
-
-	AEnemy* me;
-
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
-
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 
-	
+
+public:
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AParticleActor> p_Actor;
+
+	class AEnemy* me;
 };

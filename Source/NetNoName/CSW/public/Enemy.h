@@ -13,7 +13,7 @@ enum class EEnemyState : uint8
 	Idle,
 	Move,
 	Attack,
-	Sturn,
+	Stun,
 	Die
 };
 
@@ -57,6 +57,10 @@ public:
 	EEnemyState mState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+	int32 enemyHp = 100000;
+	int32 currentHp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	float idleDelayTime = 6;
 	float currentTime = 0;
 	int32 attackIndex;
@@ -76,7 +80,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	UAnimMontage* InstantDeath;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
-	UAnimMontage* Sturn;
+	UAnimMontage* Stun;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	UAnimMontage* Die;
 
@@ -96,15 +100,16 @@ private:
 
 	APlayer_Revenant* targetPlayer;
 
+	bool isStun = false;
+	bool isDie = false;
+	bool isStart = true;
+
 private:
 
 	void ChangeState();
-	void StratState();
 	void IdleState();
 	void MoveState();
 	void AttackState();
-	void StunState();
-	void DieState();
-
+	void AniState(bool* isState, UAnimMontage* playMotion);
 
 };

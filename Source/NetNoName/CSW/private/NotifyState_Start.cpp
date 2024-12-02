@@ -9,10 +9,16 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 
+#include "EnemyHpBarUI.h"
+
 void UNotifyState_Start::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
 
     auto my = MeshComp->GetOwner();
+
+	// UI 체력바 보여주고, MainUI에 붙여준다
+	//UEnemyHpBarUI* hpUI = CreateWidget<UEnemyHpBarUI>(my->GetWorld());
+	
 
     FVector pos = my->GetActorLocation();
     FRotator rot = FRotator::ZeroRotator;
@@ -40,7 +46,8 @@ void UNotifyState_Start::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequ
 void UNotifyState_Start::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
     AActor* owner = MeshComp->GetOwner();
-    me = Cast<AEnemy>(MeshComp->GetOwner());
+	me = Cast<AEnemy>(MeshComp->GetOwner());
+
 
     if (me)
     {
