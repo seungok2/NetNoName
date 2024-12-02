@@ -31,5 +31,6 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* txt_EnemyHp;
 
-
+public:
+	void UpdateHp(int32 current, int32 maxHp);
 };

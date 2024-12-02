@@ -30,6 +30,7 @@ enum class EAttackState : uint8
 
 class UEnemyAnim;
 class APlayer_Revenant;
+class UCSW_TestMainUI;
 
 UCLASS()
 class NETNONAME_API AEnemy : public ACharacter
@@ -51,7 +52,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-
+	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "State")
 	EEnemyState mState;
@@ -59,6 +60,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	int32 enemyHp = 100000;
 	int32 currentHp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+	TSubclassOf<UCSW_TestMainUI> enemyMainUIFactory;
+	class UCSW_TestMainUI* enemyMainUI;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	float idleDelayTime = 6;
@@ -111,5 +116,8 @@ private:
 	void MoveState();
 	void AttackState();
 	void AniState(bool* isState, UAnimMontage* playMotion);
+	
+public:
+	void Danmage(int32 Damage);
 
 };

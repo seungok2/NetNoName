@@ -5,6 +5,8 @@
 #include "EnemyAnim.h"
 #include "NetNoName\RSS\Player_Revenant.h"
 
+#include "CSW_TestMainUI.h"
+
 // Sets default values
 AEnemy::AEnemy()
 {
@@ -31,9 +33,15 @@ void AEnemy::BeginPlay()
 	anim = Cast<UEnemyAnim>(this->GetMesh()->GetAnimInstance());
 	
 	// 스폰, 시작시 start Motion 실행
-	isDie = true;
-	mState = EEnemyState::Die;
-	//PlayAnimMontage(startMotion);
+	PlayAnimMontage(startMotion);
+	isDie = false;
+
+
+	enemyMainUI = CreateWidget<UCSW_TestMainUI>(GetWorld(), enemyMainUIFactory);
+	if (enemyMainUI)
+	{
+		enemyMainUI->AddToViewport();
+	}
 
 	currentHp = enemyHp;
 }
@@ -52,6 +60,8 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
+
+
 
 APlayer_Revenant* AEnemy::FindClosestPlayer()
 {
@@ -251,4 +261,18 @@ void AEnemy::AniState(bool* isState, UAnimMontage* playMotion)
 	}
 	else
 		return;
+}
+
+void AEnemy::Danmage(int32 Damage)
+{
+	currentHp -= Damage;
+
+	if (currentHp <= 0)
+	{
+		mState = EEnemyState::Die;
+		isDie = true;
+	}
+
+	enemyMainUI->UpdateCurrentHp(currentHp, enemyHp);
+	
 }
