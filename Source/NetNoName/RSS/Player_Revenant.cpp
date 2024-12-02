@@ -6,6 +6,8 @@
 #include "Projectile_Base.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/CapsuleComponent.h"
+#include "Engine/DamageEvents.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 APlayer_Revenant::APlayer_Revenant()
 {
@@ -122,7 +124,10 @@ void APlayer_Revenant::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(APlayer_Revenant,PlayerHP_Max);
+	DOREPLIFETIME(APlayer_Revenant,PlayerHP_Current);
 	DOREPLIFETIME(APlayer_Revenant,bIsCombatMode);
+	DOREPLIFETIME(APlayer_Revenant,bIsDead);
 }
 
 void APlayer_Revenant::BeginPlay()
@@ -157,4 +162,78 @@ void APlayer_Revenant::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(IA_E, ETriggerEvent::Started, this, &APlayer_Revenant::Action_E);
 		EnhancedInputComponent->BindAction(IA_R, ETriggerEvent::Started, this, &APlayer_Revenant::Action_R);
 	}	
+}
+
+float APlayer_Revenant::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+	class AController* EventInstigator, AActor* DamageCauser)
+{
+	if (HasAuthority())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TakeDamage"));
+		float ImpactAngle = 0;
+		
+		if (DamageEvent.IsOfType(FPointDamageEvent::ClassID))
+		{
+			FPointDamageEvent* PointDamageEvent = (FPointDamageEvent*)&DamageEvent;
+			FVector ImpactPoint = PointDamageEvent->HitInfo.ImpactPoint; // 충돌 포인트 (월드 좌표)
+			FVector ActorLocation = GetActorLocation(); // 액터의 위치
+			FVector ActorForward = GetActorForwardVector(); // 액터의 전방 벡터
+		
+			// 충돌 방향 벡터 계산 (정규화)
+			FVector ImpactDirection = (ImpactPoint - ActorLocation).GetSafeNormal();
+
+			// 액터 정면 벡터
+			FVector ForwardVector = ActorForward.GetSafeNormal();
+
+			// 내적 계산
+			float DotProduct = FVector::DotProduct(ForwardVector, ImpactDirection);
+
+			// 각도 계산 (라디안 -> 도)
+			ImpactAngle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
+
+			// 외적 계산
+			FVector CrossProduct = FVector::CrossProduct(ActorForward, ImpactDirection);
+
+			// Z축 확인 (양수: 오른쪽, 음수: 왼쪽)
+			float Side = FVector::DotProduct(CrossProduct, GetActorUpVector());
+
+			ImpactAngle *= Side;
+		}
+		
+		PlayerHP_Current -= DamageAmount;
+		
+		UE_LOG(LogTemp, Warning, TEXT("TakeDamage [%s] : %f, ImpactAngle : %f"), *GetActorNameOrLabel(), PlayerHP_Current, ImpactAngle);
+		
+		if(PlayerHP_Current <= 0 && bIsDead == false)
+		{
+			bIsDead = true;
+
+			// 움직이지 못하게 하자.
+			GetCharacterMovement()->DisableMovement();
+			BroadCast_Die(ImpactAngle);
+		}
+		else
+		{
+			BroadCast_TakeDamage(ImpactAngle);
+		}
+	}
+	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+}
+
+void APlayer_Revenant::BroadCast_TakeDamage_Implementation(float ImpactAngle)
+{
+	UE_LOG(LogTemp, Warning, TEXT("BroadCast_TakeDamage [ImpactAngle : %f]"),ImpactAngle);
+	HitAngle = ImpactAngle;
+
+	//애니메이션 실행?!
+	bHitAnimationActive = true;
+}
+
+void APlayer_Revenant::BroadCast_Die_Implementation(float ImpactAngle)
+{
+	UE_LOG(LogTemp, Warning, TEXT("BroadCast_Die [ImpactAngle : %f]"),ImpactAngle);
+	bool bIsForward = (FMath::Abs(ImpactAngle) < 90);
+	FName Section = bIsForward?FName("Forward"):FName("Backward");
+	//UE_LOG(LogTemp, Warning, TEXT("BroadCast_TakeDamage bIsDead : %s"), *Section.ToString());
+	PlayAnimMontage(AM_Death,1, Section);
 }

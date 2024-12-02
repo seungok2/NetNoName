@@ -17,6 +17,18 @@ class NETNONAME_API APlayer_Revenant : public APlayer_Base
 private:
 
 protected:
+	UPROPERTY(Replicated ,EditAnywhere, BlueprintReadOnly, Category = PlayerStatus)
+	float PlayerHP_Max = 100;
+	UPROPERTY(Replicated ,EditAnywhere, BlueprintReadOnly, Category = PlayerStatus)
+	float PlayerHP_Current = 100;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = PlayerStatus)
+	bool bIsDead = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Hit)
+	float HitAngle = 0;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Hit)
+	bool bHitAnimationActive = false;
+	
 	UPROPERTY(Replicated ,EditAnywhere, BlueprintReadOnly, Category = Attack)
 	bool bIsCombatMode = false;
 	
@@ -39,6 +51,9 @@ public:
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
 	UAnimMontage* AM_Reload;
 
+	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
+	UAnimMontage* AM_Death;
+	
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Projectile)
 	TSubclassOf<class AProjectile_Base> Projectile_Primary;
 
@@ -65,7 +80,7 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void ServerRPC_Reload();
 	UFUNCTION(NetMulticast, Reliable)
-	void BroadCast_Reload();	
+	void BroadCast_Reload();
 	
 	void Action_Q();
 	void Action_E();
@@ -75,6 +90,12 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void BroadCast_TakeDamage(float Angle);
+	UFUNCTION(NetMulticast, Reliable)
+	void BroadCast_Die(float Angle);	
 public:
 	APlayer_Revenant();
 	
