@@ -4,20 +4,11 @@
 #include "Player_Revenant.h"
 #include "EnhancedInputComponent.h"
 #include "Projectile_Base.h"
+#include "Blueprint/UserWidget.h"
 #include "Components/CapsuleComponent.h"
 
 APlayer_Revenant::APlayer_Revenant()
 {
-	SkeletalMeshPaths.AddUnique(TEXT("/Game/ParagonRevenant/Characters/Heroes/Revenant/Meshes/Revenant"));
-	SkeletalMeshPaths.AddUnique(TEXT("/Game/ParagonRevenant/Characters/Heroes/Revenant/Skins/ChronoBoss/Meshes/Revenant_ChronoBoss"));
-	/*SkeletalMeshPaths.AddUnique(TEXT("/Game/ParagonRevenant/Characters/Heroes/Revenant/Skins/FrostKing/Meshes/Revenant_FrostKing"));*/
-	SkeletalMeshPaths.AddUnique(TEXT("/Game/ParagonRevenant/Characters/Heroes/Revenant/Skins/RavenQuill/Meshes/Revenant_RavenQuill"));
-	SetSkeletalMeshes();
-	GetMesh()->SetSkeletalMesh(SkeletalMeshes[0]);
-	
-	AnimClassPath = TEXT("/Game/Bluprint/Player/Revenant/ABP_Revenant");
-	SetAnimClass();
-	
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0,0,-105), FRotator(0,-90,0));
 	
 	GetCapsuleComponent()->SetCapsuleHalfHeight(105.0f);
@@ -40,10 +31,15 @@ void APlayer_Revenant::ComboAttackSave()
 	}
 }
 
-void APlayer_Revenant::PrimaryAttack(const FInputActionValue& Value)
+void APlayer_Revenant::PrimaryAttack()
 {
 	//Super::Action_MBLeft(Value);
-
+	if (CurrentPrimaryProjectileCount <= 0)
+	{
+		Reload();
+		return;
+	}
+	
 	if (bIsAttacking)
 	{
 		bSaveAttack = true;
@@ -51,56 +47,96 @@ void APlayer_Revenant::PrimaryAttack(const FInputActionValue& Value)
 	else
 	{
 		bIsAttacking = true;
-		if (AM_PrimaryAttack)
-		{
-			PlayAnimMontage(AM_PrimaryAttack);
-
-			auto SpawnedActor = GetWorld()->SpawnActor<AProjectile_Base>(Projectile_Primary, FTransform(Calc_AimTransform(FName("FirePosition"), ECC_Visibility)));
-			if (SpawnedActor)
-			{
-				SpawnedActor->SetActorEnableCollision(true);
-				UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(SpawnedActor->GetRootComponent());
-				if (PrimitiveComponent)
-				{
-					PrimitiveComponent->IgnoreActorWhenMoving(this, true);
-				}
-			}
-		}
+		FTransform AimTransForm = FTransform(Calc_AimTransform(FName("FirePosition"), ECC_Visibility));
+		CurrentPrimaryProjectileCount--;
+		ServerRPC_PrimaryAttack(AimTransForm);
 	}
 }
 
-void APlayer_Revenant::Reload(const FInputActionValue& Value)
+void APlayer_Revenant::ServerRPC_PrimaryAttack_Implementation(FTransform AimTransForm)
+{
+	BroadCast_PrimaryAttack(AimTransForm);
+}
+
+void APlayer_Revenant::BroadCast_PrimaryAttack_Implementation(FTransform AimTransForm)
+{
+	if (AM_PrimaryAttack)
+	{
+		PlayAnimMontage(AM_PrimaryAttack);
+	}
+	auto SpawnedActor = GetWorld()->SpawnActor<AProjectile_Base>(Projectile_Primary, AimTransForm);
+	if (SpawnedActor)
+	{
+		SpawnedActor->SetActorEnableCollision(true);
+		UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(SpawnedActor->GetRootComponent());
+		if (PrimitiveComponent)
+		{
+			PrimitiveComponent->IgnoreActorWhenMoving(this, true);
+		}
+	}	
+}
+
+void APlayer_Revenant::Reload()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Reload"));
+	if (bIsAttacking) return;
+	if (CurrentPrimaryProjectileCount == MaxPrimaryProjectileCount) return;
+
+	CurrentPrimaryProjectileCount = MaxPrimaryProjectileCount;
+	bIsAttacking = true;
+	ServerRPC_Reload();
+}
+
+void APlayer_Revenant::ServerRPC_Reload_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("ServerRPC_Reload_Implementation"));
+	BroadCast_Reload();
+}
+
+void APlayer_Revenant::BroadCast_Reload_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("BroadCast_Reload_Implementation"));
+	if (AM_Reload)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AM_Reload"));
+		PlayAnimMontage(AM_Reload);
+	}
+}
+
+void APlayer_Revenant::Action_Q()
+{
+	bIsCombatMode = !bIsCombatMode;
+}
+
+void APlayer_Revenant::Action_E()
 {
 	
 }
 
-void APlayer_Revenant::ReloadEnd(const FInputActionValue& Value)
+void APlayer_Revenant::Action_R()
 {
 	
 }
 
-void APlayer_Revenant::Action_Q(const FInputActionValue& Value)
+void APlayer_Revenant::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
-	
-}
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-void APlayer_Revenant::Action_E(const FInputActionValue& Value)
-{
-	
-}
-
-void APlayer_Revenant::Action_R(const FInputActionValue& Value)
-{
-	
+	DOREPLIFETIME(APlayer_Revenant,bIsCombatMode);
 }
 
 void APlayer_Revenant::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GetMesh()->SetSkeletalMesh(SkeletalMeshes[PlayerID % SkeletalMeshes.Num()]);
+	GetMesh()->SetSkeletalMesh(Skins[PlayerID % Skins.Num()]);
 	if (AM_Entrance)
 		PlayAnimMontage(AM_Entrance);
+
+	if(IsLocallyControlled() == false) return;
+
+	CrossHairWidget = Cast<UUserWidget>( CreateWidget(GetWorld(), CrossHairWidgetClass) );
+	CrossHairWidget->AddToViewport();
 }
 
 void APlayer_Revenant::Tick(float DeltaTime)
@@ -117,7 +153,6 @@ void APlayer_Revenant::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	{
 		EnhancedInputComponent->BindAction(IA_MBLeft, ETriggerEvent::Started, this, &APlayer_Revenant::PrimaryAttack);
 		EnhancedInputComponent->BindAction(IA_MBRight, ETriggerEvent::Started, this, &APlayer_Revenant::Reload);
-		EnhancedInputComponent->BindAction(IA_MBRight, ETriggerEvent::Canceled, this, &APlayer_Revenant::ReloadEnd);
 		EnhancedInputComponent->BindAction(IA_Q, ETriggerEvent::Started, this, &APlayer_Revenant::Action_Q);
 		EnhancedInputComponent->BindAction(IA_E, ETriggerEvent::Started, this, &APlayer_Revenant::Action_E);
 		EnhancedInputComponent->BindAction(IA_R, ETriggerEvent::Started, this, &APlayer_Revenant::Action_R);

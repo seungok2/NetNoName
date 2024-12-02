@@ -17,6 +17,9 @@ class NETNONAME_API APlayer_Revenant : public APlayer_Base
 private:
 
 protected:
+	UPROPERTY(Replicated ,EditAnywhere, BlueprintReadOnly, Category = Attack)
+	bool bIsCombatMode = false;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attack)
 	bool bIsAttacking = false;
 	
@@ -33,6 +36,9 @@ public:
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
 	UAnimMontage* AM_PrimaryAttack;
 
+	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
+	UAnimMontage* AM_Reload;
+
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Projectile)
 	TSubclassOf<class AProjectile_Base> Projectile_Primary;
 
@@ -41,16 +47,31 @@ public:
 
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Projectile)
 	int8 CurrentPrimaryProjectileCount = 4;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UUserWidget> CrossHairWidgetClass;
+	UPROPERTY()
+	class UUserWidget* CrossHairWidget;
 private:
 
 protected:
-	void PrimaryAttack(const FInputActionValue& Value);
-	void Reload(const FInputActionValue& Value);
-	void ReloadEnd(const FInputActionValue& Value);
-	void Action_Q(const FInputActionValue& Value);
-	void Action_E(const FInputActionValue& Value);
-	void Action_R(const FInputActionValue& Value);
+	void PrimaryAttack();
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_PrimaryAttack(FTransform AimTransForm);
+	UFUNCTION(NetMulticast, Reliable)
+	void BroadCast_PrimaryAttack(FTransform AimTransForm);	
+	
+	void Reload();
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_Reload();
+	UFUNCTION(NetMulticast, Reliable)
+	void BroadCast_Reload();	
+	
+	void Action_Q();
+	void Action_E();
+	void Action_R();
 
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;

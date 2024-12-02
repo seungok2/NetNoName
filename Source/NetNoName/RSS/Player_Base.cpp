@@ -18,40 +18,18 @@ APlayer_Base::APlayer_Base()
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->SetupAttachment(RootComponent);
 	SpringArmComp->SetRelativeLocationAndRotation(
-		FVector(0.0f, 0.0f, 70.0f),
-		FRotator(0, 70, 90));
-	SpringArmComp->TargetArmLength = 300;
-	SpringArmComp->bUsePawnControlRotation = true;
-	SpringArmComp->SocketOffset = FVector(0.0f, 60.0f, 0.0f);
-
+	FVector(0.0f, 75.0f, 100.0f),  // 캐릭터의 약간 뒤쪽 위에 배치
+	FRotator(-10.0f, 0.0f, 0.0f)); // 약간 아래를 바라보도록 회전
+	SpringArmComp->TargetArmLength = 550.0f; // 카메라 거리 설정
+	SpringArmComp->bUsePawnControlRotation = true; // 캐릭터 회전과 연동
+	SpringArmComp->bDoCollisionTest = true;       // 충돌 방지 활성화
+	// 카메라 오프셋 설정
+	SpringArmComp->SocketOffset = FVector(0.0f, 50.0f, 20.0f); // 약간 오른쪽으로 오프셋 적용
+	
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringArmComp, USpringArmComponent::SocketName);
-	CameraComp->bUsePawnControlRotation = false;
-}
-
-void APlayer_Base::SetSkeletalMeshes()
-{
-	for (FString path : SkeletalMeshPaths)
-	{
-		ConstructorHelpers::FObjectFinder<USkeletalMesh> InitMesh(*path);
-		if (InitMesh.Succeeded())
-		{
-			SkeletalMeshes.AddUnique(InitMesh.Object);
-		}
-	}
-}
-
-void APlayer_Base::SetAnimClass()
-{
-	ConstructorHelpers::FClassFinder<UAnimInstance> AnimBP(*AnimClassPath);
-	if (AnimBP.Succeeded())
-	{
-		UE_LOG(LogTemp, Display, TEXT("AnimBP.Succeeded"));
-		if (AnimBP.Class)
-		{
-			GetMesh()->SetAnimClass(AnimBP.Class);
-		}
-	}
+	CameraComp->FieldOfView = 105.0f; // FOV를 넓게 설정해 액션과 몰입감을 높임
+	CameraComp->bUsePawnControlRotation = false; // 카메라가 독립적으로 회전하지 않도록 설정
 }
 
 // Called when the game starts or when spawned
@@ -153,7 +131,8 @@ void APlayer_Base::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 FTransform APlayer_Base::Calc_AimTransform(FName socketName, ECollisionChannel traceChannel ,float range)
 {
 	FHitResult Hit;
-	FVector StartLocation = GetMesh()->GetSocketLocation(socketName);
+	FVector FirePosition = GetMesh()->GetSocketLocation(socketName);
+	FVector StartLocation = CameraComp->GetComponentLocation();
 	FVector EndLocation = CameraComp->GetComponentLocation() + CameraComp->GetForwardVector() * range;
 	FCollisionQueryParams params;
 	params.AddIgnoredActor(this);
@@ -165,10 +144,10 @@ FTransform APlayer_Base::Calc_AimTransform(FName socketName, ECollisionChannel t
 		EndLocation = Hit.ImpactPoint;
 	}
 
-	FRotator LookAtRotator = UKismetMathLibrary::FindLookAtRotation(StartLocation, EndLocation);
-	// DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor(255, 0, 255), false, 5);
-	// UE_LOG(LogTemp, Warning, TEXT("Rotator : %f, %f, %f"),LookAtRotator.Yaw,LookAtRotator.Pitch,LookAtRotator.Roll);
-	return UKismetMathLibrary::MakeTransform(StartLocation, LookAtRotator);
+	FRotator LookAtRotator = UKismetMathLibrary::FindLookAtRotation(FirePosition, EndLocation);
+	// DrawDebugPoint(GetWorld(), EndLocation, 10, FColor::Red, false, 5);
+	// DrawDebugLine(GetWorld(), FirePosition, EndLocation, FColor(255, 0, 255), false, 5);
+	return UKismetMathLibrary::MakeTransform(FirePosition, LookAtRotator);
 }
 
 void APlayer_Base::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const

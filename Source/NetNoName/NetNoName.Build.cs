@@ -8,17 +8,17 @@ public class NetNoName : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "Niagara" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "Niagara", "UMG" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
 
-        // Public Çì´õ ÆÄÀÏ °æ·Î
+        // Public ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
         PublicIncludePaths.AddRange(new string[] {
             "NetNoName/CSW/public"
         });
 
-        // Private CPP ÆÄÀÏ °æ·Î
+        // Private CPP ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
         PrivateIncludePaths.AddRange(new string[] {
             "NetNoName/CSW/private"
         });
