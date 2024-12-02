@@ -46,6 +46,12 @@ void APlayer_Base::BeginPlay()
 	
 }
 
+float APlayer_Base::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+	class AController* EventInstigator, AActor* DamageCauser)
+{
+	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+}
+
 void APlayer_Base::Action_Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
