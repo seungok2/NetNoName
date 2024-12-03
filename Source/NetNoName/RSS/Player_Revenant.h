@@ -82,9 +82,7 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void BroadCast_Reload();
 	
-	void Action_Q();
-	void Action_E();
-	void Action_R();
+	void ChangeCombatMode();
 
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void BeginPlay() override;

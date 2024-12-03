@@ -35,6 +35,11 @@ void APlayer_Revenant::ComboAttackSave()
 
 void APlayer_Revenant::PrimaryAttack()
 {
+	if (!bIsCombatMode)
+	{
+		bIsCombatMode = true;
+	}
+	
 	//Super::Action_MBLeft(Value);
 	if (CurrentPrimaryProjectileCount <= 0)
 	{
@@ -105,19 +110,9 @@ void APlayer_Revenant::BroadCast_Reload_Implementation()
 	}
 }
 
-void APlayer_Revenant::Action_Q()
+void APlayer_Revenant::ChangeCombatMode()
 {
 	bIsCombatMode = !bIsCombatMode;
-}
-
-void APlayer_Revenant::Action_E()
-{
-	
-}
-
-void APlayer_Revenant::Action_R()
-{
-	
 }
 
 void APlayer_Revenant::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -158,9 +153,9 @@ void APlayer_Revenant::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	{
 		EnhancedInputComponent->BindAction(IA_MBLeft, ETriggerEvent::Started, this, &APlayer_Revenant::PrimaryAttack);
 		EnhancedInputComponent->BindAction(IA_MBRight, ETriggerEvent::Started, this, &APlayer_Revenant::Reload);
-		EnhancedInputComponent->BindAction(IA_Q, ETriggerEvent::Started, this, &APlayer_Revenant::Action_Q);
-		EnhancedInputComponent->BindAction(IA_E, ETriggerEvent::Started, this, &APlayer_Revenant::Action_E);
-		EnhancedInputComponent->BindAction(IA_R, ETriggerEvent::Started, this, &APlayer_Revenant::Action_R);
+		EnhancedInputComponent->BindAction(IA_Q, ETriggerEvent::Started, this, &APlayer_Revenant::ChangeCombatMode);
+		EnhancedInputComponent->BindAction(IA_E, ETriggerEvent::Started, this, &APlayer_Revenant::ChangeCombatMode);
+		EnhancedInputComponent->BindAction(IA_R, ETriggerEvent::Started, this, &APlayer_Revenant::Reload);
 	}	
 }
 
