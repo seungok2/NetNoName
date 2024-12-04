@@ -4,6 +4,7 @@
 #include "NetGameInstance.h"
 #include "OnlineSubsystem.h"
 #include "OnlineSessionSettings.h"
+#include "Online/OnlineSessionNames.h"
 
 void UNetGameInstance::Init()
 {
@@ -16,6 +17,11 @@ void UNetGameInstance::Init()
 		SessionInterface = subsys->GetSessionInterface();
 		// 세션 생성 성공 시 호출되는 함수 등록
 		SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(this, &UNetGameInstance::OnCreateSessionComplete);
+		// 세션 파괴 성공 시 호출되는 함수 등록
+		SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this, &UNetGameInstance::OnDestroySessionComplete);
+		// 세션 검색 성공 시 호출되는 함수 등록
+		SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this, &UNetGameInstance::OnFindSessionComplete);
+
 	}
 }
 
@@ -59,5 +65,76 @@ void UNetGameInstance::OnCreateSessionComplete(FName sessionName, bool bWasSucce
 	{
 		UE_LOG(LogTemp,Warning,TEXT("OnCreateSessionFail : %s"), *sessionName.ToString());
 	}
+	
+}
+
+void UNetGameInstance::DestoryMySession(FString sessionName)
+{
+	SessionInterface->DestroySession(FName(sessionName));
+	
+	
+}
+
+void UNetGameInstance::OnDestroySessionComplete(FName sessionName, bool bWasSuccessful)
+{
+	if(bWasSuccessful)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("OnDestroySessionComplete : %s"), *sessionName.ToString());
+	}
+	else
+	{
+		UE_LOG(LogTemp,Warning,TEXT("OnDestoryCreateSessionFail : %s"), *sessionName.ToString());
+	}
+	
+}
+
+void UNetGameInstance::FindOtherSession()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Session Search Start"));
+	
+	// 세션 검색 설정
+	sessionSearch = MakeShared<FOnlineSessionSearch>();
+
+	FName subsysName = IOnlineSubsystem::Get()->GetSubsystemName();
+	UE_LOG(LogTemp, Warning, TEXT("SubSystem Name : %s"), *subsysName.ToString());
+	sessionSearch->bIsLanQuery = subsysName.IsEqual(FName(TEXT("NULL")));
+
+	// 활성화 되어있는 세션만 검색하자
+	sessionSearch->QuerySettings.Set(SEARCH_PRESENCE,true,EOnlineComparisonOp::Equals);
+
+	//세션을 몇개까지 검색할지
+	sessionSearch->MaxSearchResults = 100;
+
+	// 세션 검색하자
+	SessionInterface->FindSessions(0,sessionSearch.ToSharedRef());
+	
+}
+
+void UNetGameInstance::OnFindSessionComplete(bool bWasSuccessful)
+{
+	if(bWasSuccessful)
+	{
+		auto results = sessionSearch->SearchResults;
+
+		for(int i = 0; i < results.Num(); i++)
+		{
+			FOnlineSessionSearchResult sr = results[i];
+
+			// DP_NAME 커스텀 정보 가져오기
+			FString displayName;
+			sr.Session.SessionSettings.Get(TEXT("DP_NAME"), displayName);
+
+			// 세션 만들 사람 이름 (LAN은 PC이름, Steam은 ID가 들어감)
+			FString sessionCreator = sr.Session.OwningUserName;
+
+			UE_LOG(LogTemp,Warning,TEXT("Session : %s, Creator : %s"), *displayName, *sessionCreator);
+
+		}
+		
+		
+	}
+	
+	
+	UE_LOG(LogTemp, Warning, TEXT("Session Search Complete"));
 	
 }
