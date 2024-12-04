@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
+#include "Net\UnrealNetwork.h"
 #include "NotifyState_RandomLighting.generated.h"
 
 /**
@@ -22,6 +23,8 @@ class NETNONAME_API UNotifyState_RandomLighting : public UAnimNotifyState
 protected:
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
+
+
 
 public:
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")

@@ -6,6 +6,8 @@
 #include "NetNoName\RSS\Player_Revenant.h"
 
 #include "CSW_TestMainUI.h"
+//#include "Net/UnrealNetwork.h"
+
 
 // Sets default values
 AEnemy::AEnemy()
@@ -23,6 +25,9 @@ AEnemy::AEnemy()
 	attackIndex = 0;
 	currentMontage = nullptr;
 	
+	// Replication 설정
+	bReplicates = true;
+
 }
 
 // Called when the game starts or when spawned
@@ -34,8 +39,10 @@ void AEnemy::BeginPlay()
 	
 	// 스폰, 시작시 start Motion 실행
 	PlayAnimMontage(startMotion);
+	
+	isStart = true;
 	isDie = false;
-
+	isStun = false;
 
 	enemyMainUI = CreateWidget<UCSW_TestMainUI>(GetWorld(), enemyMainUIFactory);
 	if (enemyMainUI)
@@ -58,6 +65,18 @@ void AEnemy::Tick(float DeltaTime)
 void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+}
+
+void AEnemy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AEnemy, mState);
+	DOREPLIFETIME(AEnemy, currentHp);
+	DOREPLIFETIME(AEnemy, isDie);
+	DOREPLIFETIME(AEnemy, isStun);
+	DOREPLIFETIME(AEnemy, isStart);
 
 }
 
@@ -118,10 +137,69 @@ APlayer_Revenant* AEnemy::FindFarthestPlayer()
 
 void AEnemy::ChangeState()
 {
+	if (HasAuthority()) // 서버인지 확인
+	{
+		FString logmsg = UEnum::GetValueAsString(mState);
+		/*GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logmsg);*/
+
+		switch (mState)
+		{
+		case EEnemyState::Start:
+			AniState(&isStart, startMotion);
+			break;
+		case EEnemyState::Idle:
+			IdleState();
+			break;
+		case EEnemyState::Move:
+			MoveState();
+			break;
+		case EEnemyState::Attack:
+			AttackState();
+			break;
+		case EEnemyState::Stun:
+			AniState(&isStun, Stun);
+			break;
+		case EEnemyState::Die:
+			AniState(&isDie, Die);
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+void AEnemy::OnRep_ChangeState()
+{
 	FString logmsg = UEnum::GetValueAsString(mState);
 	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logmsg);
 
+
 	switch (mState)
+	{
+	case EEnemyState::Start:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Enemy state changed to Start"));
+		break;
+	case EEnemyState::Idle:
+		/*GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Enemy state changed to Idle"));*/
+		break;
+	case EEnemyState::Move:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Enemy state changed to Move"));
+		break;
+	case EEnemyState::Attack:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Enemy state changed to Attack"));
+		break;
+	case EEnemyState::Stun:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, TEXT("Enemy state changed to Stun"));
+		break;
+	case EEnemyState::Die:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple, TEXT("Enemy state changed to Die"));
+		break;
+	default:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("Unknown Enemy State"));
+		break;
+	}
+
+	/*switch (mState)
 	{
 	case EEnemyState::Start:
 		AniState(&isStart, startMotion);
@@ -143,7 +221,7 @@ void AEnemy::ChangeState()
 		break;
 	default:
 		break;
-	}
+	}*/
 }
 
 void AEnemy::IdleState()
@@ -237,7 +315,6 @@ void AEnemy::AttackState()
 		attackIndex++;
 		break;
 	default:
-
 		currentMontage = nullptr;
 		attackIndex = 0;
 		break;
@@ -245,7 +322,6 @@ void AEnemy::AttackState()
 
 	if (currentMontage != nullptr)
 		PlayAnimMontage(currentMontage);
-
 
 	mState = EEnemyState::Idle;
 }
