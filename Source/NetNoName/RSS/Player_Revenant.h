@@ -17,10 +17,10 @@ class NETNONAME_API APlayer_Revenant : public APlayer_Base
 private:
 
 protected:
-	UPROPERTY(Replicated ,EditAnywhere, BlueprintReadOnly, Category = PlayerStatus)
-	float PlayerHP_Max = 100;
-	UPROPERTY(Replicated ,EditAnywhere, BlueprintReadOnly, Category = PlayerStatus)
-	float PlayerHP_Current = 100;
+	UPROPERTY(ReplicatedUsing=On_ChangeHP ,EditAnywhere, BlueprintReadOnly, Category = PlayerStatus)
+	float PlayerHP_Max = 1000;
+	UPROPERTY(ReplicatedUsing=On_ChangeHP ,EditAnywhere, BlueprintReadOnly, Category = PlayerStatus)
+	float PlayerHP_Current = 1000;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = PlayerStatus)
 	bool bIsDead = false;
 
@@ -67,6 +67,11 @@ public:
 	TSubclassOf<class UUserWidget> CrossHairWidgetClass;
 	UPROPERTY()
 	class UUserWidget* CrossHairWidget;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UUI_PlayerInfo> PlayerInfoWidgetClass;
+	UPROPERTY()
+	class UUI_PlayerInfo* PlayerInfoWidget;
 private:
 
 protected:
@@ -93,7 +98,10 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void BroadCast_TakeDamage(float Angle);
 	UFUNCTION(NetMulticast, Reliable)
-	void BroadCast_Die(float Angle);	
+	void BroadCast_Die(float Angle);
+
+	UFUNCTION()
+	void On_ChangeHP();
 public:
 	APlayer_Revenant();
 	

@@ -4,6 +4,7 @@
 #include "Player_Revenant.h"
 #include "EnhancedInputComponent.h"
 #include "Projectile_Base.h"
+#include "UI_PlayerInfo.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/DamageEvents.h"
@@ -133,10 +134,15 @@ void APlayer_Revenant::BeginPlay()
 	if (AM_Entrance)
 		PlayAnimMontage(AM_Entrance);
 
-	if(IsLocallyControlled() == false) return;
+	if(IsLocallyControlled())
+	{
+		CrossHairWidget = Cast<UUserWidget>( CreateWidget(GetWorld(), CrossHairWidgetClass) );
+		CrossHairWidget->AddToViewport();
 
-	CrossHairWidget = Cast<UUserWidget>( CreateWidget(GetWorld(), CrossHairWidgetClass) );
-	CrossHairWidget->AddToViewport();
+		PlayerInfoWidget = Cast<UUI_PlayerInfo>( CreateWidget(GetWorld(), PlayerInfoWidgetClass) );
+		PlayerInfoWidget->AddToViewport();
+		PlayerInfoWidget->SetHP(PlayerHP_Current, PlayerHP_Max);		
+	}
 }
 
 void APlayer_Revenant::Tick(float DeltaTime)
@@ -196,6 +202,7 @@ float APlayer_Revenant::TakeDamage(float DamageAmount, struct FDamageEvent const
 		}
 		
 		PlayerHP_Current -= DamageAmount;
+		On_ChangeHP();
 		
 		UE_LOG(LogTemp, Warning, TEXT("TakeDamage [%s] : %f, ImpactAngle : %f"), *GetActorNameOrLabel(), PlayerHP_Current, ImpactAngle);
 		
@@ -231,4 +238,12 @@ void APlayer_Revenant::BroadCast_Die_Implementation(float ImpactAngle)
 	FName Section = bIsForward?FName("Forward"):FName("Backward");
 	//UE_LOG(LogTemp, Warning, TEXT("BroadCast_TakeDamage bIsDead : %s"), *Section.ToString());
 	PlayAnimMontage(AM_Death,1, Section);
+}
+
+void APlayer_Revenant::On_ChangeHP()
+{
+	if(IsLocallyControlled())
+	{
+		PlayerInfoWidget->SetHP(PlayerHP_Current, PlayerHP_Max);		
+	}
 }
