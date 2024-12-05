@@ -8,6 +8,14 @@
 #include "CSW_TestMainUI.h"
 //#include "Net/UnrealNetwork.h"
 
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h"
+#include "ParticleActor.h"
+#include "GuidedActor.h"
+
+#include "NotifyState_RandomLighting.h"
+
+
 
 // Sets default values
 AEnemy::AEnemy()
@@ -38,11 +46,13 @@ void AEnemy::BeginPlay()
 	anim = Cast<UEnemyAnim>(this->GetMesh()->GetAnimInstance());
 	
 	// 스폰, 시작시 start Motion 실행
-	PlayAnimMontage(startMotion);
+	PlayAnimMontage(Stun);
 	
+	//PlayAnimMontage(startMotion);
+
 	isStart = true;
 	isDie = false;
-	isStun = false;
+	isStun = true;
 
 	enemyMainUI = CreateWidget<UCSW_TestMainUI>(GetWorld(), enemyMainUIFactory);
 	if (enemyMainUI)
@@ -79,8 +89,6 @@ void AEnemy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePr
 	DOREPLIFETIME(AEnemy, isStart);
 
 }
-
-
 
 APlayer_Revenant* AEnemy::FindClosestPlayer()
 {
@@ -173,33 +181,36 @@ void AEnemy::OnRep_ChangeState()
 	FString logmsg = UEnum::GetValueAsString(mState);
 	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logmsg);
 
-
+	/*
 	switch (mState)
 	{
 	case EEnemyState::Start:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Enemy state changed to Start"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Enemy state changed to Start"));
 		break;
 	case EEnemyState::Idle:
-		/*GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Enemy state changed to Idle"));*/
+		IdleState();
 		break;
 	case EEnemyState::Move:
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Enemy state changed to Move"));
+		MoveState();
 		break;
 	case EEnemyState::Attack:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Enemy state changed to Attack"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Enemy state changed to Attack"));
+		AttackState();
 		break;
 	case EEnemyState::Stun:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, TEXT("Enemy state changed to Stun"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Enemy state changed to Stun"));
 		break;
 	case EEnemyState::Die:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple, TEXT("Enemy state changed to Die"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Enemy state changed to Die"));
 		break;
 	default:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("Unknown Enemy State"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Unknown Enemy State"));
 		break;
 	}
+	*/
 
-	/*switch (mState)
+	switch (mState)
 	{
 	case EEnemyState::Start:
 		AniState(&isStart, startMotion);
@@ -221,14 +232,16 @@ void AEnemy::OnRep_ChangeState()
 		break;
 	default:
 		break;
-	}*/
+	}
 }
 
 void AEnemy::IdleState()
 {
-	
+
 	if (anim->Montage_IsPlaying(currentMontage))
 	{
+		anim->animState = EEnemyState::Idle;
+
 		float playingMontageTime = currentMontage->GetPlayLength();
 		currentTime += GetWorld()->DeltaTimeSeconds;
 		if (currentTime >= playingMontageTime+idleDelayTime)
@@ -236,12 +249,14 @@ void AEnemy::IdleState()
 			mState = EEnemyState::Attack;
 			
 			currentTime = 0;
-			
+		
 			anim->animState = mState;
 		}
 	}
 	else
 	{
+		anim->animState = EEnemyState::Idle;
+
 		currentTime += GetWorld()->DeltaTimeSeconds;
 		if (currentTime >= idleDelayTime)
 		{
@@ -269,6 +284,9 @@ void AEnemy::MoveState()
 		{
 			//UE_LOG(LogTemp, Warning, TEXT("range in target"));
 			anim->animState = EEnemyState::Idle;
+
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Enemy AnimState changed to Idle"));
+
 			mState = EEnemyState::Attack;
 		}
 		else
@@ -317,6 +335,7 @@ void AEnemy::AttackState()
 	default:
 		currentMontage = nullptr;
 		attackIndex = 0;
+		mState = EEnemyState::Move;
 		break;
 	}
 
@@ -350,5 +369,61 @@ void AEnemy::Danmage(int32 Damage)
 	}
 
 	enemyMainUI->UpdateCurrentHp(currentHp, enemyHp);
+}
+
+void AEnemy::Client_SpawnEffect_Implementation(const FVector& pos, TSubclassOf<AParticleActor> actor)
+{
+	GetWorld()->SpawnActor<AParticleActor>(actor, pos, FRotator::ZeroRotator);
+}
+
+
+
+void AEnemy::Client_RandomLightingBegine_Implementation(const TArray<FVector>& spawnPos, UNiagaraSystem* niagara)
+{
+	for (const FVector& pos : spawnPos)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), niagara, pos, FRotator::ZeroRotator);
+	}
+}
+
+void AEnemy::Client_RandomLightingEnd_Implementation(const TArray<FVector>& spawnPos, TSubclassOf<AParticleActor> actor)
+{
+	for (const FVector& pos : spawnPos)
+	{
+		GetWorld()->SpawnActor<AParticleActor>(actor, pos, FRotator::ZeroRotator);
+	}
+}
+
+void AEnemy::Client_RandomPourLightingCircle_Implementation(const FVector& spawnPos, UNiagaraSystem* niagara)
+{
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), niagara, spawnPos, FRotator::ZeroRotator);
+}
+
+void AEnemy::Client_RandomPourLightingActor_Implementation(const FVector& spawnPos, TSubclassOf<AParticleActor> actor)
+{
+	GetWorld()->SpawnActor<AParticleActor>(actor, spawnPos, FRotator::ZeroRotator);
+}
+
+void AEnemy::Client_RandomHurricaneCircle_Implementation(const TArray<FVector>& spawnPos, UNiagaraSystem* niagara)
+{
+	if (HasAuthority())
+		return;
+
+	for (const FVector& pos : spawnPos)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), niagara, pos, FRotator::ZeroRotator);
+	}
+
+}
+
+void AEnemy::Client_RandomHurricaneActor_Implementation(const TArray<FVector>& spawnPos, TSubclassOf<AGuidedActor> ActorClass)
+{
+	if (HasAuthority())
+		return;
 	
+
+	for (const FVector& pos : spawnPos)
+	{
+		GetWorld()->SpawnActor<AGuidedActor>(ActorClass, pos, FRotator::ZeroRotator);
+	}
 }

@@ -7,7 +7,6 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
-//#include "NiagaraComponent.h"
 #include "ParticleActor.h"
 //#include "Net\UnrealNetwork.h"
 
@@ -25,38 +24,40 @@ void UNotifyState_RandomLighting::NotifyBegin(USkeletalMeshComponent* MeshComp, 
 	spawnPos.Empty();
 
 
-	if (world)
+	if (me->HasAuthority())
 	{
-		for (int32 i = 0; i < spawnNum; i++)
+		if (world)
 		{
-			FVector RandomDir = UKismetMathLibrary::RandomUnitVector();
-			float RandomDis = FMath::FRandRange(spawnMinRadius, spawnMaxRadius);
-
-			// 스폰 위치 계산 = 현재 위치 + 방향*거리
-			spawnPos.Add(CenterPos + RandomDir * RandomDis);
-			
-			FHitResult hitInfo;
-			FVector start = spawnPos[i] + FVector(0, 0, 5000.0f);
-			FVector end = spawnPos[i] + FVector(0, 0, -5000.0f);
-
-			bool bhit = world->LineTraceSingleByChannel(hitInfo, start, end, ECC_Visibility);
-
-			if (bhit)
+			for (int32 i = 0; i < spawnNum; i++)
 			{
-				spawnPos[i].Z = hitInfo.Location.Z + 0.1f;
+				FVector RandomDir = UKismetMathLibrary::RandomUnitVector();
+				float RandomDis = FMath::FRandRange(spawnMinRadius, spawnMaxRadius);
+
+				// 스폰 위치 계산 = 현재 위치 + 방향*거리
+				spawnPos.Add(CenterPos + RandomDir * RandomDis);
+
+				FHitResult hitInfo;
+				FVector start = spawnPos[i] + FVector(0, 0, 5000.0f);
+				FVector end = spawnPos[i] + FVector(0, 0, -5000.0f);
+
+				bool bhit = world->LineTraceSingleByChannel(hitInfo, start, end, ECC_Visibility);
+
+				if (bhit)
+				{
+					spawnPos[i].Z = hitInfo.Location.Z + 0.1f;
+				}
+				else
+				{
+					spawnPos[i].Z = CenterPos.Z - 260.0f;
+				}
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(world, magicCircle, spawnPos[i], FRotator::ZeroRotator);
 			}
-			else
+
+			AEnemy* enemy = Cast<AEnemy>(me);
+			if (enemy)
 			{
-				spawnPos[i].Z = CenterPos.Z - 260.0f;
+				enemy->Client_RandomLightingBegine(spawnPos, magicCircle);
 			}
-
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(world, magicCircle, spawnPos[i], FRotator::ZeroRotator);
-
-			//// 디버그 점 표시 (색상, 크기, 지속 시간 조절 가능)
-			//DrawDebugPoint(world, spawnPos[i], 10.0f, FColor::Blue, false, 2.0f);
-
-			//// 또는 디버그 구 표시
-			//DrawDebugSphere(world, spawnPos[i], 50.0f, 12, FColor::Green, false, 2.0f);
 		}
 	}
 }
@@ -68,39 +69,44 @@ void UNotifyState_RandomLighting::NotifyEnd(USkeletalMeshComponent* MeshComp, UA
 	if (!me)
 		return;
 
+
 	FVector CenterPos = me->GetActorLocation();
 
 	UWorld* world = me->GetWorld();
 
+	// 마무리 Effect 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = me;
 
 	world->SpawnActor<AParticleActor>(drumParticle, CenterPos, FRotator::ZeroRotator, SpawnParams);
 
 
-	if (world)
+	if (me->HasAuthority())
 	{
-		for (int32 i = 0; i < spawnNum; i++)
+		if (world)
 		{
-			
-			//niagaraComp[i]->DestroyComponent();
-
 			int32 Randomindex = FMath::RandRange(0, particleActors.Num() - 1);
 
-			/*UGameplayStatics::SpawnEmitterAtLocation(world, lightningEffects[Randomindex], spawnPos[i], FRotator::ZeroRotator);*/
-		
-			// Actor로 대체
-			world->SpawnActor<AParticleActor>(particleActors[Randomindex], spawnPos[i], FRotator::ZeroRotator);
+			for (int32 i = 0; i < spawnNum; i++)
+			{
 
-			//// 디버그 점 표시 (색상, 크기, 지속 시간 조절 가능)
-			//DrawDebugPoint(world, spawnPos[i], 10.0f, FColor::Blue, false, 2.0f);
+				// Actor로 대체
+				world->SpawnActor<AParticleActor>(particleActors[Randomindex], spawnPos[i], FRotator::ZeroRotator);
+			}
 
-			//// 또는 디버그 구 표시
-			//DrawDebugSphere(world, spawnPos[i], 50.0f, 12, FColor::Green, false, 2.0f);
+			AEnemy* enemy = Cast<AEnemy>(me);
+			if (enemy)
+			{
+				enemy->Client_RandomLightingEnd(spawnPos, particleActors[Randomindex]);
+			}
 		}
 	}
 
 }
+
+
+
+
 
 
 

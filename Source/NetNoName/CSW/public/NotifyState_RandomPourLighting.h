@@ -62,4 +62,6 @@ private:
 	FVector CenterPos;
 	UWorld* world;
 
+	class AEnemy* enemy;
+
 };

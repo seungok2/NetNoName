@@ -131,4 +131,26 @@ private:
 public:
 	void Danmage(int32 Damage);
 
+	// DrumMotionEffect
+	UFUNCTION(Client, Reliable)
+	void Client_SpawnEffect(const FVector& pos, TSubclassOf<AParticleActor> acotr);
+	
+	// RandomLighting
+	UFUNCTION(Client, Reliable)
+	void Client_RandomLightingBegine(const TArray<FVector>& spawnPos, class UNiagaraSystem* niagara);
+	UFUNCTION(Client, Reliable)
+	void Client_RandomLightingEnd(const TArray<FVector>& spawnPos, TSubclassOf<AParticleActor> actor);
+
+	// RandomPourLighting
+	UFUNCTION(Client, Reliable)
+	void Client_RandomPourLightingCircle(const FVector& spawnPos, class UNiagaraSystem* niagara);
+	UFUNCTION(Client, Reliable)
+	void Client_RandomPourLightingActor(const FVector& spawnPos, TSubclassOf<AParticleActor> actor);
+
+	// RandomHurricane
+	UFUNCTION(Client, Reliable)
+	void Client_RandomHurricaneCircle(const TArray<FVector>& spawnPos, class UNiagaraSystem* niagara);
+	UFUNCTION(Client, Reliable)
+	void Client_RandomHurricaneActor(const TArray<FVector>& spawnPos, TSubclassOf<AGuidedActor> ActorClass);
+
 };

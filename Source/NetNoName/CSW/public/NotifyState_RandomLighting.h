@@ -25,7 +25,6 @@ protected:
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 
 
-
 public:
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
 	//TArray<UParticleSystem*> lightningEffects;
@@ -47,6 +46,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
 	int32 spawnNum = 5;
+
 
 
 private:
