@@ -9,7 +9,7 @@
 #include "NiagaraFunctionLibrary.h"
 //#include "NiagaraComponent.h"
 #include "ParticleActor.h"
-
+//#include "Net\UnrealNetwork.h"
 
 void UNotifyState_RandomLighting::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
@@ -101,3 +101,7 @@ void UNotifyState_RandomLighting::NotifyEnd(USkeletalMeshComponent* MeshComp, UA
 	}
 
 }
+
+
+
+

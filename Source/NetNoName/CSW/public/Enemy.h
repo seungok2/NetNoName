@@ -52,13 +52,16 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "State")
+	UPROPERTY(ReplicatedUsing = OnRep_ChangeState)
 	EEnemyState mState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	int32 enemyHp = 100000;
+
+	UPROPERTY(Replicated)
 	int32 currentHp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
@@ -105,13 +108,21 @@ private:
 
 	APlayer_Revenant* targetPlayer;
 
+	UPROPERTY(Replicated)
 	bool isStun = false;
+	UPROPERTY(Replicated)
 	bool isDie = false;
+	UPROPERTY(Replicated)
 	bool isStart = true;
 
 private:
 
 	void ChangeState();
+	// OnRep 함수 선언
+	UFUNCTION()
+	void OnRep_ChangeState();
+
+
 	void IdleState();
 	void MoveState();
 	void AttackState();
