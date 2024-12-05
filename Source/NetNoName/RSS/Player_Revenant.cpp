@@ -36,12 +36,15 @@ void APlayer_Revenant::ComboAttackSave()
 
 void APlayer_Revenant::Die()
 {
-	UE_LOG(LogTemp, Warning, TEXT("AnimNotify_Die"));
-	AnimInstance-> Montage_SetPlayRate(AM_Death, 0.0f);
+	UE_LOG(LogTemp, Warning, TEXT("AnimNotify_Die : %s"), *GetActorNameOrLabel());
+	GetMesh()->SetVisibility(false);
+	
 }
 
 void APlayer_Revenant::PrimaryAttack()
 {
+	if (bIsDead) return;
+	
 	if (!bIsCombatMode)
 	{
 		bIsCombatMode = true;
@@ -93,6 +96,7 @@ void APlayer_Revenant::BroadCast_PrimaryAttack_Implementation(FTransform AimTran
 void APlayer_Revenant::Reload()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Reload"));
+	if (bIsDead) return;
 	if (bIsAttacking) return;
 	if (CurrentPrimaryProjectileCount == MaxPrimaryProjectileCount) return;
 
@@ -119,6 +123,7 @@ void APlayer_Revenant::BroadCast_Reload_Implementation()
 
 void APlayer_Revenant::ChangeCombatMode()
 {
+	if (bIsDead) return;
 	bIsCombatMode = !bIsCombatMode;
 }
 
