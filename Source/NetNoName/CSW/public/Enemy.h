@@ -13,7 +13,7 @@ enum class EEnemyState : uint8
 	Idle,
 	Move,
 	Attack,
-	Sturn,
+	Stun,
 	Die
 };
 
@@ -30,6 +30,7 @@ enum class EAttackState : uint8
 
 class UEnemyAnim;
 class APlayer_Revenant;
+class UCSW_TestMainUI;
 
 UCLASS()
 class NETNONAME_API AEnemy : public ACharacter
@@ -51,10 +52,21 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "State")
+	UPROPERTY(ReplicatedUsing = OnRep_ChangeState)
 	EEnemyState mState;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+	int32 enemyHp = 100000;
+
+	UPROPERTY(Replicated)
+	int32 currentHp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+	TSubclassOf<UCSW_TestMainUI> enemyMainUIFactory;
+	class UCSW_TestMainUI* enemyMainUI;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	float idleDelayTime = 6;
@@ -64,6 +76,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	TArray<EAttackState> attackPattern;
 
+	// 몽타주
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	UAnimMontage* startMotion;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
@@ -74,7 +87,10 @@ public:
 	UAnimMontage* wideArea2;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	UAnimMontage* InstantDeath;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+	UAnimMontage* Stun;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+	UAnimMontage* Die;
 
 	UPROPERTY()
 	UEnemyAnim* anim;
@@ -82,7 +98,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	float attackRang = 100.0f;
 
-
+	// 가까운 Character 찾기 -> APlayer_Revenant->player_Base 
 	APlayer_Revenant* FindClosestPlayer();
 	APlayer_Revenant* FindFarthestPlayer();
 
@@ -92,15 +108,27 @@ private:
 
 	APlayer_Revenant* targetPlayer;
 
+	UPROPERTY(Replicated)
+	bool isStun = false;
+	UPROPERTY(Replicated)
+	bool isDie = false;
+	UPROPERTY(Replicated)
+	bool isStart = true;
+
 private:
 
 	void ChangeState();
-	void StratState();
+	// OnRep 함수 선언
+	UFUNCTION()
+	void OnRep_ChangeState();
+
+
 	void IdleState();
 	void MoveState();
 	void AttackState();
-	void StunState();
-	void DieState();
-
+	void AniState(bool* isState, UAnimMontage* playMotion);
+	
+public:
+	void Danmage(int32 Damage);
 
 };

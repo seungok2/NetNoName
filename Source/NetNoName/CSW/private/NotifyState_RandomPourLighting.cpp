@@ -30,14 +30,35 @@ void UNotifyState_RandomPourLighting::NotifyBegin(USkeletalMeshComponent* MeshCo
 	delayTime = 300.0f / 60.0f / spawnNumFloat*2;
 	spawnPos.Empty();
 
+	FActorSpawnParameters spawnParameter;
+	spawnParameter.Owner = me;
+	
+	world->SpawnActor<AParticleActor>(drumPartcle, CenterPos, FRotator::ZeroRotator, spawnParameter);
+
+
 	for (int i = 0; i < spawnNum; i++)
 	{
 		FVector randomDir = UKismetMathLibrary::RandomUnitVector();
 		float randomDis = FMath::RandRange(spawnMinRadius, spawnMaxRadius);
 
 		spawnPos.Add(CenterPos + randomDir * randomDis);
-		spawnPos[i].Z = 0.1f;
+		
+		FHitResult hitInfo;
+		FVector start = spawnPos[i] + FVector(0, 0, 5000.0f);
+		FVector end = spawnPos[i] + FVector(0, 0, -5000.0f);
 
+		bool bhit = world->LineTraceSingleByChannel(hitInfo, start, end, ECC_Visibility);
+
+		if (bhit)
+		{
+			spawnPos[i].Z = hitInfo.Location.Z + 0.1f;
+		}
+		else
+		{
+			spawnPos[i].Z = CenterPos.Z - 260.0f;
+		}
+
+		//spawnPos[i].Z = 0.1f;
 		// spawn 나이아가라 서클 
 	}
 

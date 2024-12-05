@@ -2,6 +2,8 @@
 
 
 #include "P_Revenant_Primay.h"
+
+#include "Enemy.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -28,17 +30,21 @@ void AP_Revenant_Primay::OnComponentHit(UPrimitiveComponent* HitComponent, AActo
 {
 	Super::OnComponentHit(HitComponent, OtherActor, OtherComp, NormalImpulse, Hit);
 
-	if (!HasAuthority()) return;
+	if (!HasAuthority() || OtherActor == nullptr || OtherComp == nullptr) return;
+
+	if (OtherActor->IsA(AEnemy::StaticClass()))
+	{
+		AEnemy* enemy = Cast<AEnemy>(OtherActor);
+		enemy->Danmage(HitDamage);
+	}
 	
-	if (OtherActor == nullptr || OtherComp == nullptr) return;
-	
+	FVector ShotDirection = (Hit.TraceEnd - Hit.TraceStart).GetSafeNormal(); 
+	UGameplayStatics::ApplyPointDamage(Hit.GetActor(), HitDamage, ShotDirection , Hit, GetInstigatorController(), this, UDamageType::StaticClass());
 	Broadcast_HitProcess(Hit);
 }
 
 void AP_Revenant_Primay::Broadcast_HitProcess_Implementation(const FHitResult& Hit)
 {
-	UGameplayStatics::ApplyDamage(Hit.GetActor(), HitDamage, GetInstigatorController(), this, UDamageType::StaticClass());
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Particle_Hit_World, Hit.ImpactPoint, UKismetMathLibrary::MakeRotFromX(Hit.ImpactNormal));
-
 	Destroy();
 }

@@ -21,6 +21,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "effect")
 	TSubclassOf<AParticleActor> partcleActor;
 	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UEnemyHpBarUI> enemyHpBarUIFactory;
+
+
 protected:
 
 	AEnemy* me;
@@ -28,4 +32,6 @@ protected:
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
 
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
+
+	
 };

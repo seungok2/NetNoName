@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
+#include "Net\UnrealNetwork.h"
 #include "NotifyState_RandomLighting.generated.h"
 
 /**
@@ -23,9 +24,14 @@ protected:
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 
+
+
 public:
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
 	//TArray<UParticleSystem*> lightningEffects;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
+	TSubclassOf<AParticleActor> drumParticle;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
 	TArray<TSubclassOf<AParticleActor>> particleActors;

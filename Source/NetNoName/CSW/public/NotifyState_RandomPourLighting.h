@@ -28,6 +28,8 @@ protected:
 public:
 	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
 	TArray<UParticleSystem*> lightningEffects;*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
+	TSubclassOf<AParticleActor> drumPartcle;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
 	TArray<TSubclassOf<AParticleActor>> particleActors;

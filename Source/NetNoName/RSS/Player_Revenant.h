@@ -17,6 +17,18 @@ class NETNONAME_API APlayer_Revenant : public APlayer_Base
 private:
 
 protected:
+	UPROPERTY(ReplicatedUsing=On_ChangeHP ,EditAnywhere, BlueprintReadOnly, Category = PlayerStatus)
+	float PlayerHP_Max = 1000;
+	UPROPERTY(ReplicatedUsing=On_ChangeHP ,EditAnywhere, BlueprintReadOnly, Category = PlayerStatus)
+	float PlayerHP_Current = 1000;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = PlayerStatus)
+	bool bIsDead = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Hit)
+	float HitAngle = 0;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Hit)
+	bool bHitAnimationActive = false;
+	
 	UPROPERTY(Replicated ,EditAnywhere, BlueprintReadOnly, Category = Attack)
 	bool bIsCombatMode = false;
 	
@@ -31,6 +43,9 @@ protected:
 	
 public:
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
+	UAnimInstance* AnimInstance;
+	
+	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
 	UAnimMontage* AM_Entrance;
 	
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
@@ -39,6 +54,9 @@ public:
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
 	UAnimMontage* AM_Reload;
 
+	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
+	UAnimMontage* AM_Death;
+	
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Projectile)
 	TSubclassOf<class AProjectile_Base> Projectile_Primary;
 
@@ -52,6 +70,11 @@ public:
 	TSubclassOf<class UUserWidget> CrossHairWidgetClass;
 	UPROPERTY()
 	class UUserWidget* CrossHairWidget;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UUI_PlayerInfo> PlayerInfoWidgetClass;
+	UPROPERTY()
+	class UUI_PlayerInfo* PlayerInfoWidget;
 private:
 
 protected:
@@ -65,16 +88,23 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void ServerRPC_Reload();
 	UFUNCTION(NetMulticast, Reliable)
-	void BroadCast_Reload();	
+	void BroadCast_Reload();
 	
-	void Action_Q();
-	void Action_E();
-	void Action_R();
+	void ChangeCombatMode();
 
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void BroadCast_TakeDamage(float Angle);
+	UFUNCTION(NetMulticast, Reliable)
+	void BroadCast_Die(float Angle);
+
+	UFUNCTION()
+	void On_ChangeHP();
 public:
 	APlayer_Revenant();
 	
@@ -82,4 +112,6 @@ public:
 	void ResetCombo();
 	UFUNCTION(BlueprintCallable)
 	void ComboAttackSave();
+	UFUNCTION(BlueprintCallable)
+	void Die();
 };
