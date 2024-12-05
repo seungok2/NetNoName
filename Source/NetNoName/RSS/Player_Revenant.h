@@ -43,6 +43,9 @@ protected:
 	
 public:
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
+	UAnimInstance* AnimInstance;
+	
+	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
 	UAnimMontage* AM_Entrance;
 	
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
@@ -109,4 +112,6 @@ public:
 	void ResetCombo();
 	UFUNCTION(BlueprintCallable)
 	void ComboAttackSave();
+	UFUNCTION(BlueprintCallable)
+	void Die();
 };

@@ -34,6 +34,12 @@ void APlayer_Revenant::ComboAttackSave()
 	}
 }
 
+void APlayer_Revenant::Die()
+{
+	UE_LOG(LogTemp, Warning, TEXT("AnimNotify_Die"));
+	AnimInstance-> Montage_SetPlayRate(AM_Death, 0.0f);
+}
+
 void APlayer_Revenant::PrimaryAttack()
 {
 	if (!bIsCombatMode)
@@ -70,7 +76,7 @@ void APlayer_Revenant::BroadCast_PrimaryAttack_Implementation(FTransform AimTran
 {
 	if (AM_PrimaryAttack)
 	{
-		PlayAnimMontage(AM_PrimaryAttack);
+		AnimInstance->Montage_Play(AM_PrimaryAttack);
 	}
 	auto SpawnedActor = GetWorld()->SpawnActor<AProjectile_Base>(Projectile_Primary, AimTransForm);
 	if (SpawnedActor)
@@ -107,7 +113,7 @@ void APlayer_Revenant::BroadCast_Reload_Implementation()
 	if (AM_Reload)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AM_Reload"));
-		PlayAnimMontage(AM_Reload);
+		AnimInstance->Montage_Play(AM_Reload);
 	}
 }
 
@@ -131,8 +137,10 @@ void APlayer_Revenant::BeginPlay()
 	Super::BeginPlay();
 
 	GetMesh()->SetSkeletalMesh(Skins[PlayerID % Skins.Num()]);
+	AnimInstance = GetMesh()->GetAnimInstance();
+	
 	if (AM_Entrance)
-		PlayAnimMontage(AM_Entrance);
+		AnimInstance->Montage_Play(AM_Entrance);
 
 	if(IsLocallyControlled())
 	{
@@ -181,24 +189,29 @@ float APlayer_Revenant::TakeDamage(float DamageAmount, struct FDamageEvent const
 			FVector ActorForward = GetActorForwardVector(); // 액터의 전방 벡터
 		
 			// 충돌 방향 벡터 계산 (정규화)
-			FVector ImpactDirection = (ImpactPoint - ActorLocation).GetSafeNormal();
+			FVector ImpactDirection = (ImpactPoint - ActorLocation);
+			ImpactDirection.Z = 0; 
+			ImpactDirection = ImpactDirection.GetSafeNormal();
 
 			// 액터 정면 벡터
-			FVector ForwardVector = ActorForward.GetSafeNormal();
+			FVector ForwardVector = ActorForward;
+			ForwardVector.Z = 0; 
+			ForwardVector = ForwardVector.GetSafeNormal();
 
 			// 내적 계산
 			float DotProduct = FVector::DotProduct(ForwardVector, ImpactDirection);
+			
+			ImpactAngle = FMath::Acos(DotProduct);
 
-			// 각도 계산 (라디안 -> 도)
-			ImpactAngle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
+			ImpactAngle = FMath::RadiansToDegrees(ImpactAngle);
 
 			// 외적 계산
-			FVector CrossProduct = FVector::CrossProduct(ActorForward, ImpactDirection);
+			FVector CrossProduct = FVector::CrossProduct(ForwardVector, ImpactDirection);
 
 			// Z축 확인 (양수: 오른쪽, 음수: 왼쪽)
 			float Side = FVector::DotProduct(CrossProduct, GetActorUpVector());
 
-			ImpactAngle *= Side;
+			ImpactAngle *= (Side>=0 ? 1 : -1 );
 		}
 		
 		PlayerHP_Current -= DamageAmount;
@@ -237,7 +250,12 @@ void APlayer_Revenant::BroadCast_Die_Implementation(float ImpactAngle)
 	bool bIsForward = (FMath::Abs(ImpactAngle) < 90);
 	FName Section = bIsForward?FName("Forward"):FName("Backward");
 	//UE_LOG(LogTemp, Warning, TEXT("BroadCast_TakeDamage bIsDead : %s"), *Section.ToString());
-	PlayAnimMontage(AM_Death,1, Section);
+	float returnValue = AnimInstance->Montage_Play(AM_Death, 1);
+
+	if (returnValue > 0.0f)
+	{
+		AnimInstance->Montage_JumpToSection(Section, AM_Death);
+	}
 }
 
 void APlayer_Revenant::On_ChangeHP()
