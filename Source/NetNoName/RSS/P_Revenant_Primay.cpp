@@ -2,6 +2,8 @@
 
 
 #include "P_Revenant_Primay.h"
+
+#include "Enemy.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -30,6 +32,12 @@ void AP_Revenant_Primay::OnComponentHit(UPrimitiveComponent* HitComponent, AActo
 
 	if (!HasAuthority() || OtherActor == nullptr || OtherComp == nullptr) return;
 
+	if (OtherActor->IsA(AEnemy::StaticClass()))
+	{
+		AEnemy* enemy = Cast<AEnemy>(OtherActor);
+		enemy->Danmage(HitDamage);
+	}
+	
 	FVector ShotDirection = (Hit.TraceEnd - Hit.TraceStart).GetSafeNormal(); 
 	UGameplayStatics::ApplyPointDamage(Hit.GetActor(), HitDamage, ShotDirection , Hit, GetInstigatorController(), this, UDamageType::StaticClass());
 	Broadcast_HitProcess(Hit);
