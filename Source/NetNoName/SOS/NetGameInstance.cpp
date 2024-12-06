@@ -95,13 +95,15 @@ void UNetGameInstance::FindOtherSession()
 	// 세션 검색 설정
 	sessionSearch = MakeShared<FOnlineSessionSearch>();
 
+	// 랜을 사용할지 사용 여부
 	FName subsysName = IOnlineSubsystem::Get()->GetSubsystemName();
 	UE_LOG(LogTemp, Warning, TEXT("SubSystem Name : %s"), *subsysName.ToString());
 	sessionSearch->bIsLanQuery = subsysName.IsEqual(FName(TEXT("NULL")));
 
 	// 활성화 되어있는 세션만 검색하자
 	sessionSearch->QuerySettings.Set(SEARCH_PRESENCE,true,EOnlineComparisonOp::Equals);
-
+	//sessionSearch->QuerySettings.Set(TEXT("DP_NAME"), FString(TEXT("SeSAC")), EOnlineComparisonOp::Equals);
+	
 	//세션을 몇개까지 검색할지
 	sessionSearch->MaxSearchResults = 100;
 
