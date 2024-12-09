@@ -23,9 +23,29 @@ void UCSW_TestMainUI::AddEnemeyHpBar()
 	// slot에 붙이기
 	enemyHpSlot->AddChild(enemyHp);
 
+	// 기본적으로 체력을 표시
+	enemyHp->SetVisibility(ESlateVisibility::Visible);
 }
 
 void UCSW_TestMainUI::UpdateCurrentHp(int32 current, int32 maxHp)
 {
 	enemyHp->UpdateHp(current, maxHp);
+
+	if (current <= 0)
+	{
+		FTimerHandle hpTimer;
+
+		GetWorld()->GetTimerManager().SetTimer
+		(
+			hpTimer,
+			[this]()
+			{
+				// 기본적으로 체력을 표시
+				enemyHp->SetVisibility(ESlateVisibility::Hidden);
+			}
+			, 3.0f, false
+		);
+	}
 }
+
+

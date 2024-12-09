@@ -11,6 +11,7 @@
 #include "NetGameInstance.h"
 #include "RobbyWidget.h"
 #include "SessionItem.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 void ULobbyUIWidget::NativeConstruct()
 {
@@ -27,6 +28,9 @@ void ULobbyUIWidget::NativeConstruct()
 		QuitButton->OnClicked.AddDynamic(this, &ULobbyUIWidget::OnQuitClicked);
 	}
 
+	Quit_Sure_Yes->OnClicked.AddDynamic(this, &ULobbyUIWidget::QuitGame);
+	Quit_Sure_No->OnClicked.AddDynamic(this, &ULobbyUIWidget::CloseSessionWidget);
+
 	if (SessionButton)
 	{
 		SessionButton->OnClicked.AddDynamic(this, &ULobbyUIWidget::OnSessionClicked);
@@ -41,24 +45,30 @@ void ULobbyUIWidget::NativeConstruct()
 	Btn_Go_Find->OnClicked.AddDynamic(this, &ULobbyUIWidget::GoFind);
 	Btn_Close->OnClicked.AddDynamic(this, &ULobbyUIWidget::CloseSessionWidget);
 	FindButton->OnClicked.AddDynamic(this, &ULobbyUIWidget::FindSession);
-	
+	Btn_FindeSession_back->OnClicked.AddDynamic(this, &ULobbyUIWidget::OnSessionClicked);
+	Btn_CreateSession_Back->OnClicked.AddDynamic(this, &ULobbyUIWidget::OnSessionClicked);
 	
 	// slider 값이 변경되면 호출되는 함수 등록
 	slider_PlayerCount->OnValueChanged.AddDynamic(this, &ULobbyUIWidget::OnValueChange);
 
 	// 세션 검색되면 호출되는 함수 등록
 	gi->onAddSession.BindUObject(this, &ULobbyUIWidget::OnAddSession);
+	// 세션 완전 검색 완료되면 호출되는 함수 등록
+	gi->onFindComplete.BindUObject(this, &ULobbyUIWidget::OnFindComplete);
 	
 }
 
 void ULobbyUIWidget::GoCreate()
 {
+	
 	WidgetSwitcher->SetActiveWidgetIndex(2);
 }
 
 void ULobbyUIWidget::GoFind()
 {
 	WidgetSwitcher->SetActiveWidgetIndex(3);
+	// 강제소 세션 검색 하자
+	FindSession();
 	
 }
 
@@ -77,6 +87,7 @@ void ULobbyUIWidget::CreateSession()
 	FString displayName = Edit_DisplayName->GetText().ToString();
 	int32 playerCount = slider_PlayerCount->GetValue();
 	gi->CreateMySession(displayName,playerCount);
+	GetWorld()->ServerTravel(TEXT("/Game/Polar/Maps/RobbyMap?listen"));
 	
 }
 
@@ -91,30 +102,55 @@ void ULobbyUIWidget::FindSession()
 {
 	// 세션 찾기 로직 함수 실행
 	UE_LOG(LogTemp, Warning, TEXT("Find Button Clicked!"));
+	// 기존것을 지우고 실행
+	Scroll_SessionList->ClearChildren();
 	
 	gi->FindOtherSession();
 	
 }
 
-void ULobbyUIWidget::OnAddSession(FString info)
+void ULobbyUIWidget::OnAddSession(int32 idx, FString info)
 {
 	USessionItem* item = CreateWidget<USessionItem>(GetWorld(), sessionItemFactory);
 	Scroll_SessionList->AddChild(item);
-	item->SetInfo(info);
+	item->SetInfo(idx, info);
 	
 }
 
+void ULobbyUIWidget::OnFindComplete(bool isComplete)
+{
+	// 검색 버튼 비활성
+	FindButton->SetIsEnabled(isComplete);
+}
+
+
+void ULobbyUIWidget::QuitGame()
+{
+	
+	// 플레이어 컨트롤러 가져오기
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+
+	// 게임 종료
+	UKismetSystemLibrary::QuitGame(GetWorld(), PlayerController, EQuitPreference::Quit, true);
+	
+}
 
 void ULobbyUIWidget::OnStartClicked()
 {
 	// 게임 시작 로직 구현
 	UE_LOG(LogTemp, Warning, TEXT("Start Button Clicked!"));
+	// 세션 만든 사람(서버)이 만들어진 세션으로 이동
+	GetWorld()->ServerTravel(TEXT("/Game/ModularSciFi/Levels/LandscapePreview?listen"));
 }
 
 void ULobbyUIWidget::OnQuitClicked()
 {
 	// 게임 종료 로직 구현
 	UE_LOG(LogTemp, Warning, TEXT("Quit Button Clicked!"));
+
+	WidgetSwitcher->SetActiveWidgetIndex(4);
+	
+	
 }
 
 void ULobbyUIWidget::OnSessionClicked()

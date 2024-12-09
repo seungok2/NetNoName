@@ -23,6 +23,13 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UButton* QuitButton;
+	// 종료버튼
+	UPROPERTY(meta = (BindWidget))
+	class UButton* Quit_Sure_Yes;
+	UPROPERTY(meta = (BindWidget))
+	class UButton* Quit_Sure_No;
+	UFUNCTION()
+	void QuitGame();
 
 	UPROPERTY(meta = (BindWidget))
 	class UButton* SessionButton;
@@ -33,6 +40,7 @@ public:
 
 	UFUNCTION()
 	void OnQuitClicked();
+	
 
 	UFUNCTION()
 	void OnSessionClicked();
@@ -61,7 +69,11 @@ public:
 	class UButton* Btn_Go_Find;
 	UFUNCTION()
 	void GoFind();
-
+	
+	UPROPERTY(meta = (BindWidget))
+	class UButton* Btn_CreateSession_Back;
+	UPROPERTY(meta = (BindWidget))
+	class UButton* Btn_FindeSession_back;
 	
 
 	UPROPERTY(meta = (BindWidget))
@@ -92,7 +104,7 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* Text_PlayerCount;
 
-	// 세션 검색 솬련
+	// 세션 검색 관련
 	UPROPERTY(meta = (BindWidget))
 	class UButton* FindButton;
 	UPROPERTY(meta = (BindWidget))
@@ -105,8 +117,11 @@ public:
 	void FindSession();
 
 	UFUNCTION()
-	void OnAddSession(FString info);
-	
+	void OnAddSession(int32 idx, FString info);
+
+	UFUNCTION()
+	void OnFindComplete(bool isComplete);
+
 	
 	
 };

@@ -16,7 +16,7 @@ AParticleActor::AParticleActor()
 	sphereCol->InitSphereRadius(size);
 	//sphereCol->SetCollisionProfileName(TEXT("BlockAll"));
 
-
+	SetReplicates(true);
 }
 
 // Called when the game starts or when spawned
@@ -29,8 +29,6 @@ void AParticleActor::BeginPlay()
 
 	FTimerHandle handle;
 	GetWorld()->GetTimerManager().SetTimer(handle, this, &AParticleActor::DestroyActor, DestroyTime, false);
-	
-	sphereCol->OnComponentBeginOverlap.AddDynamic(this, &AParticleActor::OnOverlapBegin);
 }
 
 // Called every frame
@@ -48,8 +46,5 @@ void AParticleActor::DestroyActor()
 	}
 }
 
-void AParticleActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	UE_LOG(LogTemp, Warning, TEXT("hit"));
-}
+
 

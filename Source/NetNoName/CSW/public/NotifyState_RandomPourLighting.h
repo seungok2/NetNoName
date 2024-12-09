@@ -38,6 +38,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
 	UNiagaraSystem* magicCircle;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
+	TSubclassOf<AParticleActor> magicCircleActor;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	int32 spawnNum;
@@ -61,5 +64,7 @@ private:
 
 	FVector CenterPos;
 	UWorld* world;
+
+	class AEnemy* enemy;
 
 };

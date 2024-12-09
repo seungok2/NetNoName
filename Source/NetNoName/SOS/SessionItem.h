@@ -26,7 +26,9 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* Text_SessionName;
 
-	void SetInfo(FString info);
+	int32 selectIdx;
+	
+	void SetInfo(int32 idx, FString info);
 	
 	
 	

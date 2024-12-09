@@ -11,8 +11,6 @@
  * 
  */
 class AParticleActor;
-class UNiagaraSystem;
-//class UNiagaraComponent;
 
 UCLASS()
 class NETNONAME_API UNotifyState_RandomLighting : public UAnimNotifyState
@@ -25,7 +23,6 @@ protected:
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 
 
-
 public:
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
 	//TArray<UParticleSystem*> lightningEffects;
@@ -36,9 +33,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
 	TArray<TSubclassOf<AParticleActor>> particleActors;
 	
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
-	UNiagaraSystem* magicCircle;
+	TSubclassOf<AParticleActor> magicCircleActor;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
 	float spawnMinRadius = 100.0f;
@@ -47,6 +44,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
 	int32 spawnNum = 5;
+
 
 
 private:

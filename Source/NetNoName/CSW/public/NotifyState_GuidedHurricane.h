@@ -9,7 +9,6 @@
 /**
  * 
  */
-class UNiagaraSystem;
 class AGuidedActor;
 class AParticleActor;
 
@@ -21,7 +20,6 @@ class NETNONAME_API UNotifyState_GuidedHurricane : public UAnimNotifyState
 
 protected:
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
-	virtual void NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference) override;
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 public:
 	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
@@ -33,8 +31,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
 	TArray<TSubclassOf<AGuidedActor>> particleGuidedActor;
 
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
-	UNiagaraSystem* spawnEffect;
+	TSubclassOf<AParticleActor> spawnEffectActor;
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")

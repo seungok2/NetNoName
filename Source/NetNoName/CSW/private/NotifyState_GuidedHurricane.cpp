@@ -6,8 +6,6 @@
 #include "Kismet\KismetMathLibrary.h"
 #include "Kismet\KismetSystemLibrary.h"
 
-#include "NiagaraSystem.h"
-#include "NiagaraFunctionLibrary.h"
 #include "GuidedActor.h"
 #include "ParticleActor.h"
 
@@ -21,63 +19,81 @@ void UNotifyState_GuidedHurricane::NotifyBegin(USkeletalMeshComponent* MeshComp,
 	CenterPos = me->GetActorLocation();
 
 	world = me->GetWorld();
-	spawnPos.Empty();
 
-	if (world)
+	// 등장 Effect 이걸 구지?? 서버로??
+	FActorSpawnParameters spawnParameter;
+	spawnParameter.Owner = me;
+
+	world->SpawnActor<AParticleActor>(drumParticle, CenterPos, FRotator::ZeroRotator, spawnParameter);
+
+	if (me->HasAuthority())
 	{
-		FActorSpawnParameters spawnParameter;
-		spawnParameter.Owner = me;
+		spawnPos.Empty();
 
-		world->SpawnActor<AParticleActor>(drumParticle, CenterPos, FRotator::ZeroRotator, spawnParameter);
-
-		for (int i = 0; i < spawnNum; i++)
+		if (world)
 		{
-			FVector randVector = UKismetMathLibrary::RandomUnitVector();
-			float randRange = FMath::FRandRange(spawnMinRadius, spawnMaxRadius);
 
-			// 스폰 위치 계산 = 현재 위치 + 방향*거리
-			spawnPos.Add(CenterPos + randVector * randRange);
-			
-
-			FHitResult hitInfo;
-			FVector start = spawnPos[i] + FVector(0, 0, 5000.0f);
-			FVector end = spawnPos[i] + FVector(0, 0, -5000.0f);
-
-			bool bhit = world->LineTraceSingleByChannel(hitInfo, start, end, ECC_Visibility);
-
-			if (bhit)
+			for (int i = 0; i < spawnNum; i++)
 			{
-				spawnPos[i].Z = hitInfo.Location.Z;
+				FVector randVector = UKismetMathLibrary::RandomUnitVector();
+				float randRange = FMath::FRandRange(spawnMinRadius, spawnMaxRadius);
+
+				// 스폰 위치 계산 = 현재 위치 + 방향*거리
+				spawnPos.Add(CenterPos + randVector * randRange);
+
+
+				FHitResult hitInfo;
+				FVector start = spawnPos[i] + FVector(0, 0, 5000.0f);
+				FVector end = spawnPos[i] + FVector(0, 0, -5000.0f);
+
+				bool bhit = world->LineTraceSingleByChannel(hitInfo, start, end, ECC_Visibility);
+
+				if (bhit)
+				{
+					spawnPos[i].Z = hitInfo.Location.Z;
+				}
+				else
+				{
+					spawnPos[i].Z = CenterPos.Z - 260.0f;
+				}
+
+				world->SpawnActor<AParticleActor>(spawnEffectActor, spawnPos[i], FRotator::ZeroRotator);
+
 			}
-			else
+			AEnemy* enemy = Cast<AEnemy>(me);
+			if (enemy)
 			{
-				spawnPos[i].Z = CenterPos.Z - 260.0f;
+				enemy->Client_RandomHurricaneCircle(spawnPos, spawnEffectActor);
 			}
-
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(world, spawnEffect, spawnPos[i], FRotator::ZeroRotator);
-
 		}
+
 	}
 
-
-}
-
-void UNotifyState_GuidedHurricane::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
-{
 }
 
 void UNotifyState_GuidedHurricane::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
-
-	if (world)
+	if (MeshComp->GetOwner()->HasAuthority())
 	{
-		for (int i = 0; i < spawnNum; i++)
+		if (world)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("hurricane"));
+			AEnemy* enemy = Cast<AEnemy>(me);
 
 			int32 Randomindex = FMath::RandRange(0, particleGuidedActor.Num() - 1);
+			
+			for (int i = 0; i < spawnNum; i++)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("hurricane"));
 
-			world->SpawnActor<AGuidedActor>(particleGuidedActor[Randomindex], spawnPos[i], FRotator::ZeroRotator);
+
+				world->SpawnActor<AGuidedActor>(particleGuidedActor[Randomindex], spawnPos[i], FRotator::ZeroRotator);
+				
+			}
+
+			if (enemy)
+			{
+				enemy->Client_RandomHurricaneActor(spawnPos, particleGuidedActor[Randomindex]);
+			}
 		}
 	}
 }

@@ -32,11 +32,11 @@ void AP_Revenant_Primay::OnComponentHit(UPrimitiveComponent* HitComponent, AActo
 
 	if (!HasAuthority() || OtherActor == nullptr || OtherComp == nullptr) return;
 
-	if (OtherActor->IsA(AEnemy::StaticClass()))
-	{
-		AEnemy* enemy = Cast<AEnemy>(OtherActor);
-		enemy->Danmage(HitDamage);
-	}
+	//if (OtherActor->IsA(AEnemy::StaticClass()))
+	//{
+	//	AEnemy* enemy = Cast<AEnemy>(OtherActor);
+	//	//enemy->TakeDanmage(HitDamage);
+	//}
 	
 	FVector ShotDirection = (Hit.TraceEnd - Hit.TraceStart).GetSafeNormal(); 
 	UGameplayStatics::ApplyPointDamage(Hit.GetActor(), HitDamage, ShotDirection , Hit, GetInstigatorController(), this, UDamageType::StaticClass());
