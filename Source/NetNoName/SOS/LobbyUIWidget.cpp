@@ -11,6 +11,7 @@
 #include "NetGameInstance.h"
 #include "RobbyWidget.h"
 #include "SessionItem.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 void ULobbyUIWidget::NativeConstruct()
 {
@@ -27,6 +28,9 @@ void ULobbyUIWidget::NativeConstruct()
 		QuitButton->OnClicked.AddDynamic(this, &ULobbyUIWidget::OnQuitClicked);
 	}
 
+	Quit_Sure_Yes->OnClicked.AddDynamic(this, &ULobbyUIWidget::QuitGame);
+	Quit_Sure_No->OnClicked.AddDynamic(this, &ULobbyUIWidget::CloseSessionWidget);
+
 	if (SessionButton)
 	{
 		SessionButton->OnClicked.AddDynamic(this, &ULobbyUIWidget::OnSessionClicked);
@@ -41,7 +45,8 @@ void ULobbyUIWidget::NativeConstruct()
 	Btn_Go_Find->OnClicked.AddDynamic(this, &ULobbyUIWidget::GoFind);
 	Btn_Close->OnClicked.AddDynamic(this, &ULobbyUIWidget::CloseSessionWidget);
 	FindButton->OnClicked.AddDynamic(this, &ULobbyUIWidget::FindSession);
-	
+	Btn_FindeSession_back->OnClicked.AddDynamic(this, &ULobbyUIWidget::OnSessionClicked);
+	Btn_CreateSession_Back->OnClicked.AddDynamic(this, &ULobbyUIWidget::OnSessionClicked);
 	
 	// slider 값이 변경되면 호출되는 함수 등록
 	slider_PlayerCount->OnValueChanged.AddDynamic(this, &ULobbyUIWidget::OnValueChange);
@@ -119,6 +124,17 @@ void ULobbyUIWidget::OnFindComplete(bool isComplete)
 }
 
 
+void ULobbyUIWidget::QuitGame()
+{
+	
+	// 플레이어 컨트롤러 가져오기
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+
+	// 게임 종료
+	UKismetSystemLibrary::QuitGame(GetWorld(), PlayerController, EQuitPreference::Quit, true);
+	
+}
+
 void ULobbyUIWidget::OnStartClicked()
 {
 	// 게임 시작 로직 구현
@@ -131,6 +147,10 @@ void ULobbyUIWidget::OnQuitClicked()
 {
 	// 게임 종료 로직 구현
 	UE_LOG(LogTemp, Warning, TEXT("Quit Button Clicked!"));
+
+	WidgetSwitcher->SetActiveWidgetIndex(4);
+	
+	
 }
 
 void ULobbyUIWidget::OnSessionClicked()
