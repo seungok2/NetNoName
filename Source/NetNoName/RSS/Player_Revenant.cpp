@@ -281,6 +281,8 @@ void APlayer_Revenant::BroadCast_TakeDamage_Implementation(float ImpactAngle)
 
 	//애니메이션 실행?!
 	bHitAnimationActive = true;
+
+	AnimInstance->Montage_Play(AM_HitReact);
 }
 
 void APlayer_Revenant::BroadCast_Die_Implementation(float ImpactAngle)

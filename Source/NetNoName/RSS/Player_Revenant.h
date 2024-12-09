@@ -55,6 +55,9 @@ public:
 	UAnimMontage* AM_Reload;
 
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
+	UAnimMontage* AM_HitReact;
+
+	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
 	UAnimMontage* AM_Death;
 	
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Projectile)
