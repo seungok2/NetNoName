@@ -3,3 +3,9 @@
 
 #include "LobbyGameModeBase.h"
 
+
+void ALobbyGameModeBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+}

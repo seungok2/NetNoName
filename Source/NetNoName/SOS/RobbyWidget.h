@@ -18,23 +18,7 @@ public:
 	// 생성자 또는 초기화 함수 선언 가능
 	virtual void NativeConstruct() override;
 
-	// 버튼을 위한 UPROPERTY
-	UPROPERTY(meta = (BindWidget))
-	class UButton* StartButton;
-
-	UPROPERTY(meta = (BindWidget))
-	class UButton* QuitButton;
-
-	/*
-	UPROPERTY(meta = (BindWidget))
-	class UGridPanel* GridPanel;
-	*/
 	
-	// 버튼 클릭 이벤트 핸들러 함수
-	UFUNCTION()
-	void OnStartClicked();
 
-	UFUNCTION()
-	void OnQuitClicked();
 	
 };

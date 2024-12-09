@@ -17,10 +17,10 @@ class NETNONAME_API APlayer_Revenant : public APlayer_Base
 private:
 
 protected:
-	UPROPERTY(Replicated ,EditAnywhere, BlueprintReadOnly, Category = PlayerStatus)
-	float PlayerHP_Max = 100;
-	UPROPERTY(Replicated ,EditAnywhere, BlueprintReadOnly, Category = PlayerStatus)
-	float PlayerHP_Current = 100;
+	UPROPERTY(ReplicatedUsing=On_ChangeHP ,EditAnywhere, BlueprintReadOnly, Category = PlayerStatus)
+	float PlayerHP_Max = 1000;
+	UPROPERTY(ReplicatedUsing=On_ChangeHP ,EditAnywhere, BlueprintReadOnly, Category = PlayerStatus)
+	float PlayerHP_Current = 1000;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = PlayerStatus)
 	bool bIsDead = false;
 
@@ -42,6 +42,9 @@ protected:
 	int32 AttackCount;
 	
 public:
+	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
+	UAnimInstance* AnimInstance;
+	
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
 	UAnimMontage* AM_Entrance;
 	
@@ -67,6 +70,11 @@ public:
 	TSubclassOf<class UUserWidget> CrossHairWidgetClass;
 	UPROPERTY()
 	class UUserWidget* CrossHairWidget;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UUI_PlayerInfo> PlayerInfoWidgetClass;
+	UPROPERTY()
+	class UUI_PlayerInfo* PlayerInfoWidget;
 private:
 
 protected:
@@ -82,9 +90,7 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void BroadCast_Reload();
 	
-	void Action_Q();
-	void Action_E();
-	void Action_R();
+	void ChangeCombatMode();
 
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void BeginPlay() override;
@@ -95,7 +101,10 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void BroadCast_TakeDamage(float Angle);
 	UFUNCTION(NetMulticast, Reliable)
-	void BroadCast_Die(float Angle);	
+	void BroadCast_Die(float Angle);
+
+	UFUNCTION()
+	void On_ChangeHP();
 public:
 	APlayer_Revenant();
 	
@@ -103,4 +112,6 @@ public:
 	void ResetCombo();
 	UFUNCTION(BlueprintCallable)
 	void ComboAttackSave();
+	UFUNCTION(BlueprintCallable)
+	void Die();
 };
