@@ -92,7 +92,7 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* Text_PlayerCount;
 
-	// 세션 검색 솬련
+	// 세션 검색 관련
 	UPROPERTY(meta = (BindWidget))
 	class UButton* FindButton;
 	UPROPERTY(meta = (BindWidget))
@@ -105,8 +105,10 @@ public:
 	void FindSession();
 
 	UFUNCTION()
-	void OnAddSession(FString info);
-	
+	void OnAddSession(int32 idx, FString info);
+
+	UFUNCTION()
+	void OnFindComplete(bool isComplete);
 	
 	
 };

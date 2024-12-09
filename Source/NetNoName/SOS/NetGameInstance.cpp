@@ -21,7 +21,8 @@ void UNetGameInstance::Init()
 		SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this, &UNetGameInstance::OnDestroySessionComplete);
 		// 세션 검색 성공 시 호출되는 함수 등록
 		SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this, &UNetGameInstance::OnFindSessionComplete);
-
+		// 세션 참여 요청 성공시 호출되는 함수 등록
+		SessionInterface->OnJoinSessionCompleteDelegates.AddUObject(this, &UNetGameInstance::OnJoinSessionComplete);
 	}
 }
 
@@ -60,6 +61,7 @@ void UNetGameInstance::OnCreateSessionComplete(FName sessionName, bool bWasSucce
 	if(bWasSuccessful)
 	{
 		UE_LOG(LogTemp,Warning,TEXT("OnCreateSessionComplete : %s"), *sessionName.ToString());
+		
 	}
 	else
 	{
@@ -91,6 +93,7 @@ void UNetGameInstance::OnDestroySessionComplete(FName sessionName, bool bWasSucc
 void UNetGameInstance::FindOtherSession()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Session Search Start"));
+	onFindComplete.ExecuteIfBound(false);
 	
 	// 세션 검색 설정
 	sessionSearch = MakeShared<FOnlineSessionSearch>();
@@ -132,14 +135,38 @@ void UNetGameInstance::OnFindSessionComplete(bool bWasSuccessful)
 
 			// 세션정보를 넘겨서 SessionItem을 추가하게 하자
 			FString sessionInfo = FString::Printf(TEXT("%s -  %s"), *displayName, *sessionCreator);
-			onAddSession.ExecuteIfBound(sessionInfo);
+			onAddSession.ExecuteIfBound(i, sessionInfo);
 			
 		}
 		
-		
 	}
 	
-	
 	UE_LOG(LogTemp, Warning, TEXT("Session Search Complete"));
+	onFindComplete.ExecuteIfBound(true);
 	
+}
+
+void UNetGameInstance::JoinOtherSession(int32 idx)
+{
+	auto results = sessionSearch->SearchResults;
+
+	// 세션 이름
+	FString displayName;
+	results[idx].Session.SessionSettings.Get(TEXT("DP_NAME"), displayName);
+
+	// 세션 참여
+	SessionInterface->JoinSession(0, FName(displayName), results[idx]);
+	
+}
+
+void UNetGameInstance::OnJoinSessionComplete(FName sessionName, EOnJoinSessionCompleteResult::Type result)
+{
+	if(result == EOnJoinSessionCompleteResult::Success)
+	{
+		FString url;
+		SessionInterface->GetResolvedConnectString(sessionName, url);
+		
+		APlayerController* pc = GetWorld()->GetFirstPlayerController();
+		pc->ClientTravel(url, ETravelType::TRAVEL_Absolute);
+	}
 }
