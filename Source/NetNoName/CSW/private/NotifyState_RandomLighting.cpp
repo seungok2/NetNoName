@@ -19,11 +19,12 @@ void UNotifyState_RandomLighting::NotifyBegin(USkeletalMeshComponent* MeshComp, 
 
 	UWorld* world = me->GetWorld();
 
-	spawnPos.Empty();
 
 
 	if (me->HasAuthority())
 	{
+		spawnPos.Empty();
+		
 		if (world)
 		{
 			for (int32 i = 0; i < spawnNum; i++)
@@ -87,9 +88,10 @@ void UNotifyState_RandomLighting::NotifyEnd(USkeletalMeshComponent* MeshComp, UA
 		{
 			int32 Randomindex = FMath::RandRange(0, particleActors.Num() - 1);
 
+
 			for (int32 i = 0; i < spawnNum; i++)
 			{
-
+				
 				// Actor·Î ´ëÃ¼
 				world->SpawnActor<AParticleActor>(particleActors[Randomindex], spawnPos[i], FRotator::ZeroRotator);
 			}

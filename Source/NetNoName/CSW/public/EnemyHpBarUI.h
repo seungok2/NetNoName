@@ -19,6 +19,9 @@ protected:
 
 
 public:
+	UPROPERTY(meta = (BindWidget))
+	class UCanvasPanel* hp_CanvasPanel;
+
 	UPROPERTY(meta=(BindWidget))
 	class UImage* img_BossImg;
 

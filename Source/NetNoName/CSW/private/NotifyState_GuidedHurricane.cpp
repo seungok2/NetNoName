@@ -19,7 +19,6 @@ void UNotifyState_GuidedHurricane::NotifyBegin(USkeletalMeshComponent* MeshComp,
 	CenterPos = me->GetActorLocation();
 
 	world = me->GetWorld();
-	spawnPos.Empty();
 
 	// 등장 Effect 이걸 구지?? 서버로??
 	FActorSpawnParameters spawnParameter;
@@ -29,6 +28,7 @@ void UNotifyState_GuidedHurricane::NotifyBegin(USkeletalMeshComponent* MeshComp,
 
 	if (me->HasAuthority())
 	{
+		spawnPos.Empty();
 
 		if (world)
 		{

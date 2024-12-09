@@ -37,41 +37,16 @@ void UNotifyState_Die::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequen
 		my->GetWorld()->SpawnActor<AParticleActor>(p_Actor, pos, rot);
 
 		AEnemy* enemy = Cast<AEnemy>(my);
-		enemy->Client_SpawnEffect(pos, p_Actor);
-
-
-		if (MeshComp)
-		{
-			// 머티리얼을 동적으로 생성
-			mt_Dynamic = MeshComp->CreateAndSetMaterialInstanceDynamic(0);
-			if (mt_Dynamic)
-			{
-				opacity = 1.0f; // 초기 Opacity
-				mt_Dynamic->SetScalarParameterValue("Opacity", opacity);
-			}
-		}
+		//enemy->Client_SpawnEffect(pos, p_Actor);
 	}
 }
 
 void UNotifyState_Die::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
 {
-	if (mt_Dynamic)
-	{
-		// 매 프레임마다 Opacity를 감소 0.5는 감소 속도
-
-		opacity = FMath::Clamp(opacity - FrameDeltaTime * 0.5f, 0.0f, 1.0f);
-		mt_Dynamic->SetScalarParameterValue("Opacity", opacity);
-	}
 }
 
 void UNotifyState_Die::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
-	if (MeshComp)
-	{
-		if (opacity <= 0.0f)
-		{
-			MeshComp->GetOwner()->Destroy();
-		}
-	}
+
 
 }

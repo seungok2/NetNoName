@@ -45,7 +45,8 @@ void AEnemy::BeginPlay()
 	anim = Cast<UEnemyAnim>(this->GetMesh()->GetAnimInstance());
 	
 	// 스폰, 시작시 start Motion 실행
-	PlayAnimMontage(startMotion);
+	//PlayAnimMontage(startMotion);
+	mState = EEnemyState::Start;
 
 	isStart = true;
 	isDie = false;
@@ -88,14 +89,15 @@ void AEnemy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePr
 
 	DOREPLIFETIME(AEnemy, mState);
 	DOREPLIFETIME(AEnemy, currentHp);
-	DOREPLIFETIME(AEnemy, isDie);
-	DOREPLIFETIME(AEnemy, isStun);
-	DOREPLIFETIME(AEnemy, isStart);
+
 
 }
 
 void AEnemy::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	if (currentHp <= 0) return;
+
+
 	if (OtherActor)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Hit Actor: %s"), *OtherActor->GetName());
@@ -104,17 +106,12 @@ void AEnemy::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimi
 
 		if (OtherActor == bullet)
 		{
-			int32 randomDamage = FMath::RandRange(400, 10000);
+			int32 randomDamage = FMath::RandRange(1000, 5000);
 			
-			Danmage(randomDamage);
+			TakeDanmage(randomDamage);
 		}
 
-
-
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("Hit!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
-
 
 
 	// 충돌 정보를 출력 (디버깅용)
@@ -213,7 +210,7 @@ void AEnemy::ChangeState()
 void AEnemy::OnRep_ChangeState()
 {
 	//FString logmsg = UEnum::GetValueAsString(mState);
-	//GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logmsg);
+	//GEngine->AddOnScreenDebugMessage(0, 1, FColor::Red, logmsg);
 
 	/*
 	switch (mState)
@@ -243,6 +240,7 @@ void AEnemy::OnRep_ChangeState()
 		break;
 	}
 	*/
+	if (isDie == true) return;
 
 	switch (mState)
 	{
@@ -275,27 +273,46 @@ void AEnemy::IdleState()
 
 	if (anim->Montage_IsPlaying(currentMontage))
 	{
-		
 		float playingMontageTime = currentMontage->GetPlayLength();
 		currentTime += GetWorld()->DeltaTimeSeconds;
 		if (currentTime >= playingMontageTime+idleDelayTime)
 		{
-			mState = EEnemyState::Attack;
-			
 			currentTime = 0;
-		
+
+			targetPlayer = FindClosestPlayer();
+
+			float dis = FVector::Distance(GetActorLocation(), targetPlayer->GetActorLocation());
+
+			if (dis >= attackRang && mState == EEnemyState::Idle)
+			{
+				mState = EEnemyState::Move;
+			}
+			else
+			{
+				mState = EEnemyState::Attack;
+			}
+
 		}
 	}
 	else
 	{
-
 		currentTime += GetWorld()->DeltaTimeSeconds;
 		if (currentTime >= idleDelayTime)
 		{
-			mState = EEnemyState::Attack;
-
 			currentTime = 0;
 
+			targetPlayer = FindClosestPlayer();
+
+			float dis = FVector::Distance(GetActorLocation(), targetPlayer->GetActorLocation());
+
+			if (dis >= attackRang)
+			{
+				mState = EEnemyState::Move;
+			}
+			else
+			{
+				mState = EEnemyState::Attack;
+			}
 		}
 	}
 	
@@ -316,8 +333,6 @@ void AEnemy::MoveState()
 			//UE_LOG(LogTemp, Warning, TEXT("range in target"));
 			anim->animState = EEnemyState::Idle;
 
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Enemy AnimState changed to Idle"));
-
 			mState = EEnemyState::Attack;
 		}
 		else
@@ -325,7 +340,7 @@ void AEnemy::MoveState()
 			//UE_LOG(LogTemp, Warning, TEXT("Not range in target"));
 			FVector direction = (targetPlayer->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 			// 방향과 크기(속도 비율)
-			AddMovementInput(direction, 1.0f); 
+			AddMovementInput(direction, 2.0f); 
 			// 방향 벡터를 회전값으로 변환
 			FRotator newRotation = direction.Rotation();
 			newRotation.Pitch = 0.0f;
@@ -424,36 +439,91 @@ void AEnemy::AttackState()
 
 void AEnemy::AniState(bool* isState, UAnimMontage* playMotion)
 {
-	if (*isState == true)
+	if (*isState)
 	{
+	
 		*isState = false;
-		PlayAnimMontage(playMotion);
-		UE_LOG(LogTemp, Warning, TEXT("aniState"));
+		Mult_AniState(playMotion);
+		UE_LOG(LogTemp, Warning, TEXT("aniState!!!!!"));
 	}
 	else
 		return;
 }
 
-void AEnemy::Danmage(int32 Damage)
+void AEnemy::Mult_AniState_Implementation(UAnimMontage* playMotion)
 {
-	currentHp -= Damage;
+	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Red, TEXT("Check 1"));
+	PlayAnimMontage(playMotion);
+}
 
-	if (currentHp <= 0)
+
+void AEnemy::OnRep_CurrentHp()
+{
+	if (enemyMainUI)
 	{
-		mState = EEnemyState::Die;
-		isDie = true;
-		enemyMainUI->UpdateCurrentHp(0, enemyHp);
+		enemyMainUI->UpdateCurrentHp(currentHp, enemyHp);
+	
+		if (currentHp <= 0)
+		{
+			isDie = true;
+			mState = EEnemyState::Die;
+		}
+	}
+}
+
+void AEnemy::TakeDanmage(int32 Damage)
+{
+	if (Damage >= CriticalDamage)
+	{
+		mState = EEnemyState::Stun;
+		isStun = true;
+	}
+
+	// server
+	if (HasAuthority())
+	{
+		currentHp -= Damage;
+
+		if (currentHp <= 0)
+		{
+			currentHp = 0;
+
+			//Mult_UpdateHealthAndDeath(currentHp, enemyHp);
+		}
+		
+		OnRep_CurrentHp();
 	}
 	else
 	{
-		enemyMainUI->UpdateCurrentHp(currentHp, enemyHp);
+		// client -> server 요청
+		Server_TakeDanmage(Damage);
 	}
 }
 
 
+void AEnemy::Server_TakeDanmage_Implementation(int32 damage)
+{
+	TakeDanmage(damage);
+}
+
+void AEnemy::Mult_UpdateHealthAndDeath_Implementation(int32 currHp, int32 MaxHp)
+{
+	if(currentHp <= 0)
+	{
+		if (anim)
+		{
+			// 0.25초 블렌드 아웃 시간으로 현재 재생 중인 모든 몽타주 정지
+			anim->Montage_Stop(0.25f);
+		}
+
+		isDie = true;
+		mState = EEnemyState::Die;
+	}
+}
 
 void AEnemy::Mult_AttackState_Implementation(UAnimMontage* Montage)
 {
+
 	if (Montage)
 	{
 		PlayAnimMontage(Montage);

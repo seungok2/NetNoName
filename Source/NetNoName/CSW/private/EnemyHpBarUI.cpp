@@ -4,6 +4,7 @@
 #include "EnemyHpBarUI.h"
 #include "Components\ProgressBar.h"
 #include "Components\TextBlock.h"
+#include "Components\CanvasPanel.h"
 
 void UEnemyHpBarUI::NativeConstruct()
 {
@@ -19,12 +20,11 @@ void UEnemyHpBarUI::UpdateHp(int32 currentHp, int32 maxHp)
         // 체력 비율 계산
         float hpRatio = FMath::Clamp(static_cast<float>(currentHp) / static_cast<float>(maxHp), 0.0f, 1.0f);
 
-        // 이전 값과 새로운 값 간에 서서히 보간 (Interp)
-        float currentHpRatio = progressBar_HpBar->GetPercent();
-        float newHpRatio = FMath::FInterpTo(currentHpRatio, hpRatio, GetWorld()->GetDeltaSeconds(), 5.0f); // 5.0f는 속도
+        UE_LOG(LogTemp, Warning, TEXT("CurrentHp: %d, MaxHp: %d, HpRatio: %f"), currentHp, maxHp, hpRatio);
+
 
         // 프로그래스바 업데이트
-        progressBar_HpBar->SetPercent(newHpRatio);
+        progressBar_HpBar->SetPercent(hpRatio);
 
     }
 
@@ -35,3 +35,5 @@ void UEnemyHpBarUI::UpdateHp(int32 currentHp, int32 maxHp)
     }
 
 }
+
+

@@ -32,7 +32,19 @@ void AGuidedActor::BeginPlay()
 	Super::BeginPlay();
 	
 	FTimerHandle handle;
-	GetWorld()->GetTimerManager().SetTimer(handle, this, &AGuidedActor::DestroyActor, destroyTime, false);
+	//GetWorld()->GetTimerManager().SetTimer(handle, this, &AGuidedActor::DestroyActor, destroyTime, false);
+
+	GetWorld()->GetTimerManager().SetTimer(
+		handle,
+		[this]() 
+		{
+			if (IsValid(this))
+			{
+				Destroy();
+			}
+		},
+		destroyTime, false);
+
 
 
 	AActor* foundActor = UGameplayStatics::GetActorOfClass(GetWorld(), AEnemy::StaticClass());
