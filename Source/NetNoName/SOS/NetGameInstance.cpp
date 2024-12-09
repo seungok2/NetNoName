@@ -128,9 +128,12 @@ void UNetGameInstance::OnFindSessionComplete(bool bWasSuccessful)
 
 			// 세션 만들 사람 이름 (LAN은 PC이름, Steam은 ID가 들어감)
 			FString sessionCreator = sr.Session.OwningUserName;
-
 			UE_LOG(LogTemp,Warning,TEXT("Session : %s, Creator : %s"), *displayName, *sessionCreator);
 
+			// 세션정보를 넘겨서 SessionItem을 추가하게 하자
+			FString sessionInfo = FString::Printf(TEXT("%s -  %s"), *displayName, *sessionCreator);
+			onAddSession.ExecuteIfBound(sessionInfo);
+			
 		}
 		
 		

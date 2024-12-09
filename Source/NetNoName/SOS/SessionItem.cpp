@@ -2,4 +2,25 @@
 
 
 #include "SessionItem.h"
+#include "Components/Button.h"
+#include "Components/TextBlock.h"
 
+void USessionItem::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	btn_Join->OnClicked.AddDynamic(this, &USessionItem::Join);
+	
+	
+}
+
+void USessionItem::Join()
+{
+	
+}
+
+void USessionItem::SetInfo(FString info)
+{
+	Text_SessionName->SetText(FText::FromString(info));
+	
+}

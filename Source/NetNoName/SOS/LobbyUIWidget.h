@@ -48,6 +48,7 @@ public:
 	class ULobbyUIWidget* lobbyUI;
 	
 public:
+	// 새션 이동 관련
 	UPROPERTY(meta = (BindWidget))
 	class UWidgetSwitcher* WidgetSwitcher;
 	
@@ -70,7 +71,8 @@ public:
 	
 	UPROPERTY()
 	class UNetGameInstance* gi;
-	
+
+	// 세션 생성 관련
 	UPROPERTY(meta = (BindWidget))
 	class UButton* CreateButton;
 
@@ -90,10 +92,20 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* Text_PlayerCount;
 
+	// 세션 검색 솬련
 	UPROPERTY(meta = (BindWidget))
 	class UButton* FindButton;
+	UPROPERTY(meta = (BindWidget))
+	class UScrollBox* Scroll_SessionList;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class USessionItem> sessionItemFactory;
+	
 	UFUNCTION()
 	void FindSession();
+
+	UFUNCTION()
+	void OnAddSession(FString info);
 	
 	
 	

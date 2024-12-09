@@ -7,8 +7,10 @@
 #include "Components/Slider.h"
 #include "Components/TextBlock.h"
 #include "Components/WidgetSwitcher.h"
+#include "Components/ScrollBox.h"
 #include "NetGameInstance.h"
 #include "RobbyWidget.h"
+#include "SessionItem.h"
 
 void ULobbyUIWidget::NativeConstruct()
 {
@@ -43,6 +45,10 @@ void ULobbyUIWidget::NativeConstruct()
 	
 	// slider 값이 변경되면 호출되는 함수 등록
 	slider_PlayerCount->OnValueChanged.AddDynamic(this, &ULobbyUIWidget::OnValueChange);
+
+	// 세션 검색되면 호출되는 함수 등록
+	gi->onAddSession.BindUObject(this, &ULobbyUIWidget::OnAddSession);
+	
 }
 
 void ULobbyUIWidget::GoCreate()
@@ -87,6 +93,14 @@ void ULobbyUIWidget::FindSession()
 	UE_LOG(LogTemp, Warning, TEXT("Find Button Clicked!"));
 	
 	gi->FindOtherSession();
+	
+}
+
+void ULobbyUIWidget::OnAddSession(FString info)
+{
+	USessionItem* item = CreateWidget<USessionItem>(GetWorld(), sessionItemFactory);
+	Scroll_SessionList->AddChild(item);
+	item->SetInfo(info);
 	
 }
 
