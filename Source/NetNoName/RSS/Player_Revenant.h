@@ -69,6 +69,18 @@ public:
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Projectile)
 	int8 CurrentPrimaryProjectileCount = 4;
 
+	UPROPERTY(EditAnywhere, Category = SFX)
+	USoundBase* SFX_Shot;
+
+	UPROPERTY(EditAnywhere, Category = SFX)
+	USoundBase* SFX_Reload;
+	
+	UPROPERTY(EditAnywhere, Category = SFX)
+	USoundBase* SFX_Hit;
+
+	UPROPERTY(EditAnywhere, Category = SFX)
+	USoundBase* SFX_Die;
+		
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UUserWidget> CrossHairWidgetClass;
 	UPROPERTY()

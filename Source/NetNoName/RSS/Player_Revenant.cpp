@@ -10,6 +10,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 APlayer_Revenant::APlayer_Revenant()
 {
@@ -82,6 +83,7 @@ void APlayer_Revenant::BroadCast_PrimaryAttack_Implementation(FTransform AimTran
 	{
 		AnimInstance->Montage_Play(AM_PrimaryAttack);
 	}
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(), SFX_Shot, GetActorLocation());
 	auto SpawnedActor = GetWorld()->SpawnActor<AProjectile_Base>(Projectile_Primary, AimTransForm);
 	if (SpawnedActor)
 	{
@@ -119,6 +121,7 @@ void APlayer_Revenant::BroadCast_Reload_Implementation()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AM_Reload"));
 		AnimInstance->Montage_Play(AM_Reload);
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), SFX_Reload, GetActorLocation());
 	}
 }
 
@@ -283,6 +286,7 @@ void APlayer_Revenant::BroadCast_TakeDamage_Implementation(float ImpactAngle)
 	bHitAnimationActive = true;
 
 	AnimInstance->Montage_Play(AM_HitReact);
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(), SFX_Hit, GetActorLocation());
 }
 
 void APlayer_Revenant::BroadCast_Die_Implementation(float ImpactAngle)
@@ -292,7 +296,7 @@ void APlayer_Revenant::BroadCast_Die_Implementation(float ImpactAngle)
 	FName Section = bIsForward?FName("Forward"):FName("Backward");
 	//UE_LOG(LogTemp, Warning, TEXT("BroadCast_TakeDamage bIsDead : %s"), *Section.ToString());
 	float returnValue = AnimInstance->Montage_Play(AM_Death, 1);
-
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(), SFX_Die, GetActorLocation());
 	if (returnValue > 0.0f)
 	{
 		AnimInstance->Montage_JumpToSection(Section, AM_Death);
