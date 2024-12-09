@@ -5,8 +5,6 @@
 #include "Enemy.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet\GameplayStatics.h"
-#include "NiagaraSystem.h"
-#include "NiagaraFunctionLibrary.h"
 
 #include "ParticleActor.h"
 
@@ -76,7 +74,7 @@ void UNotifyState_RandomPourLighting::NotifyBegin(USkeletalMeshComponent* MeshCo
 
 void UNotifyState_RandomPourLighting::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
 {
-	if (me->HasAuthority())
+	if (MeshComp->GetOwner()->HasAuthority())
 	{
 		currentTime += FrameDeltaTime;
 
@@ -87,20 +85,20 @@ void UNotifyState_RandomPourLighting::NotifyTick(USkeletalMeshComponent* MeshCom
 			if (circleIndex < spawnNum)
 			{
 				// circle 생성하고
-				UNiagaraFunctionLibrary::SpawnSystemAtLocation(world, magicCircle, spawnPos[circleIndex], FRotator::ZeroRotator);
+				world->SpawnActor<AParticleActor>(magicCircleActor, spawnPos[circleIndex], FRotator::ZeroRotator);
 
 				enemy = Cast<AEnemy>(me);
 
 				if (enemy)
 				{
-					enemy->Client_RandomPourLightingCircle(spawnPos[circleIndex], magicCircle);
+					enemy->Client_RandomPourLightingSpawnn(spawnPos[circleIndex], magicCircleActor);
 				}
 
 				circleIndex++;
 			}
 			else
 			{
-				if (magicIndex > spawnNum)
+				if (magicIndex >= spawnNum)
 					return;
 
 				// 천둥 치고
@@ -112,7 +110,7 @@ void UNotifyState_RandomPourLighting::NotifyTick(USkeletalMeshComponent* MeshCom
 
 				if (enemy)
 				{
-					enemy->Client_RandomPourLightingActor(spawnPos[magicIndex], particleActors[Randomindex]);
+					enemy->Client_RandomPourLightingSpawnn(spawnPos[magicIndex], particleActors[Randomindex]);
 				}
 
 				magicIndex++;

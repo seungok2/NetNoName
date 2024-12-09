@@ -5,8 +5,6 @@
 #include "Enemy.h"
 #include "Kismet\GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "NiagaraSystem.h"
-#include "NiagaraFunctionLibrary.h"
 #include "ParticleActor.h"
 //#include "Net\UnrealNetwork.h"
 
@@ -50,13 +48,15 @@ void UNotifyState_RandomLighting::NotifyBegin(USkeletalMeshComponent* MeshComp, 
 				{
 					spawnPos[i].Z = CenterPos.Z - 260.0f;
 				}
-				UNiagaraFunctionLibrary::SpawnSystemAtLocation(world, magicCircle, spawnPos[i], FRotator::ZeroRotator);
+
+				world->SpawnActor<AParticleActor>(magicCircleActor, spawnPos[i], FRotator::ZeroRotator);
+
 			}
 
 			AEnemy* enemy = Cast<AEnemy>(me);
 			if (enemy)
 			{
-				enemy->Client_RandomLightingBegine(spawnPos, magicCircle);
+				enemy->Client_RandomLighting(spawnPos, magicCircleActor);
 			}
 		}
 	}
@@ -97,7 +97,7 @@ void UNotifyState_RandomLighting::NotifyEnd(USkeletalMeshComponent* MeshComp, UA
 			AEnemy* enemy = Cast<AEnemy>(me);
 			if (enemy)
 			{
-				enemy->Client_RandomLightingEnd(spawnPos, particleActors[Randomindex]);
+				enemy->Client_RandomLighting(spawnPos, particleActors[Randomindex]);
 			}
 		}
 	}

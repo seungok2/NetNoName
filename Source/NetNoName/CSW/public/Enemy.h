@@ -54,6 +54,10 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	// 충돌처리
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
 public:
 	UPROPERTY(ReplicatedUsing = OnRep_ChangeState)
 	EEnemyState mState;
@@ -131,25 +135,27 @@ private:
 public:
 	void Danmage(int32 Damage);
 
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Mult_AttackState(UAnimMontage* Montage);
+
 	// DrumMotionEffect
 	UFUNCTION(Client, Reliable)
 	void Client_SpawnEffect(const FVector& pos, TSubclassOf<AParticleActor> acotr);
 	
 	// RandomLighting
 	UFUNCTION(Client, Reliable)
-	void Client_RandomLightingBegine(const TArray<FVector>& spawnPos, class UNiagaraSystem* niagara);
-	UFUNCTION(Client, Reliable)
-	void Client_RandomLightingEnd(const TArray<FVector>& spawnPos, TSubclassOf<AParticleActor> actor);
+	void Client_RandomLighting(const TArray<FVector>& spawnPos, TSubclassOf<AParticleActor> actor);
+
 
 	// RandomPourLighting
 	UFUNCTION(Client, Reliable)
-	void Client_RandomPourLightingCircle(const FVector& spawnPos, class UNiagaraSystem* niagara);
-	UFUNCTION(Client, Reliable)
-	void Client_RandomPourLightingActor(const FVector& spawnPos, TSubclassOf<AParticleActor> actor);
+	void Client_RandomPourLightingSpawnn(const FVector& spawnPos, TSubclassOf<AParticleActor> actor);
+
 
 	// RandomHurricane
 	UFUNCTION(Client, Reliable)
-	void Client_RandomHurricaneCircle(const TArray<FVector>& spawnPos, class UNiagaraSystem* niagara);
+	void Client_RandomHurricaneCircle(const TArray<FVector>& spawnPos, TSubclassOf<AParticleActor> actor);
 	UFUNCTION(Client, Reliable)
 	void Client_RandomHurricaneActor(const TArray<FVector>& spawnPos, TSubclassOf<AGuidedActor> ActorClass);
 

@@ -8,13 +8,11 @@
 #include "CSW_TestMainUI.h"
 //#include "Net/UnrealNetwork.h"
 
-#include "NiagaraSystem.h"
-#include "NiagaraFunctionLibrary.h"
 #include "ParticleActor.h"
 #include "GuidedActor.h"
 
-#include "NotifyState_RandomLighting.h"
-
+#include "Components\CapsuleComponent.h"
+#include "NetNoName\RSS\P_Revenant_Primay.h"
 
 
 // Sets default values
@@ -36,6 +34,7 @@ AEnemy::AEnemy()
 	// Replication 설정
 	bReplicates = true;
 
+
 }
 
 // Called when the game starts or when spawned
@@ -46,13 +45,11 @@ void AEnemy::BeginPlay()
 	anim = Cast<UEnemyAnim>(this->GetMesh()->GetAnimInstance());
 	
 	// 스폰, 시작시 start Motion 실행
-	PlayAnimMontage(Stun);
-	
-	//PlayAnimMontage(startMotion);
+	PlayAnimMontage(startMotion);
 
 	isStart = true;
 	isDie = false;
-	isStun = true;
+	isStun = false;
 
 	enemyMainUI = CreateWidget<UCSW_TestMainUI>(GetWorld(), enemyMainUIFactory);
 	if (enemyMainUI)
@@ -61,6 +58,13 @@ void AEnemy::BeginPlay()
 	}
 
 	currentHp = enemyHp;
+
+	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AEnemy::OnHit);
+
+	// LineTrance
+	//FTimerHandle CollisionDetectionTimer;
+
+	//GetWorld()->GetTimerManager().SetTimer(CollisionDetectionTimer, this, &AEnemy::PerformCollisionDetection, 0.5f, true);
 }
 
 // Called every frame
@@ -89,6 +93,35 @@ void AEnemy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePr
 	DOREPLIFETIME(AEnemy, isStart);
 
 }
+
+void AEnemy::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (OtherActor)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Hit Actor: %s"), *OtherActor->GetName());
+
+		AP_Revenant_Primay* bullet = Cast< AP_Revenant_Primay>(OtherActor);
+
+		if (OtherActor == bullet)
+		{
+			int32 randomDamage = FMath::RandRange(400, 10000);
+			
+			Danmage(randomDamage);
+		}
+
+
+
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Hit!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
+
+
+
+	// 충돌 정보를 출력 (디버깅용)
+	UE_LOG(LogTemp, Warning, TEXT("Hit Location: %s"), *Hit.ImpactPoint.ToString());
+	UE_LOG(LogTemp, Warning, TEXT("Hit Normal: %s"), *Hit.ImpactNormal.ToString());
+}
+
 
 APlayer_Revenant* AEnemy::FindClosestPlayer()
 {
@@ -147,6 +180,7 @@ void AEnemy::ChangeState()
 {
 	if (HasAuthority()) // 서버인지 확인
 	{
+		
 		FString logmsg = UEnum::GetValueAsString(mState);
 		/*GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logmsg);*/
 
@@ -178,8 +212,8 @@ void AEnemy::ChangeState()
 
 void AEnemy::OnRep_ChangeState()
 {
-	FString logmsg = UEnum::GetValueAsString(mState);
-	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logmsg);
+	//FString logmsg = UEnum::GetValueAsString(mState);
+	//GEngine->AddOnScreenDebugMessage(0, 1, FColor::Cyan, logmsg);
 
 	/*
 	switch (mState)
@@ -237,11 +271,11 @@ void AEnemy::OnRep_ChangeState()
 
 void AEnemy::IdleState()
 {
+	anim->animState = EEnemyState::Idle;
 
 	if (anim->Montage_IsPlaying(currentMontage))
 	{
-		anim->animState = EEnemyState::Idle;
-
+		
 		float playingMontageTime = currentMontage->GetPlayLength();
 		currentTime += GetWorld()->DeltaTimeSeconds;
 		if (currentTime >= playingMontageTime+idleDelayTime)
@@ -250,12 +284,10 @@ void AEnemy::IdleState()
 			
 			currentTime = 0;
 		
-			anim->animState = mState;
 		}
 	}
 	else
 	{
-		anim->animState = EEnemyState::Idle;
 
 		currentTime += GetWorld()->DeltaTimeSeconds;
 		if (currentTime >= idleDelayTime)
@@ -264,7 +296,6 @@ void AEnemy::IdleState()
 
 			currentTime = 0;
 
-			anim->animState = mState;
 		}
 	}
 	
@@ -305,6 +336,8 @@ void AEnemy::MoveState()
 
 void AEnemy::AttackState()
 {
+	/* TEST
+
 	switch (attackPattern[attackIndex])
 	{
 	case EAttackState::Combo:
@@ -343,6 +376,49 @@ void AEnemy::AttackState()
 		PlayAnimMontage(currentMontage);
 
 	mState = EEnemyState::Idle;
+	*/
+
+	if (HasAuthority())
+	{
+		switch (attackPattern[attackIndex])
+		{
+		case EAttackState::Combo:
+			// 몽타주 재생
+			currentMontage = Combo;
+			// 다음 패턴
+			UE_LOG(LogTemp, Warning, TEXT("Combo"));
+			attackIndex++;
+			break;
+		case EAttackState::wideArea1:
+			currentMontage = wideArea1;
+
+			UE_LOG(LogTemp, Warning, TEXT("wideArea1"));
+			attackIndex++;
+			break;
+		case EAttackState::wideArea2:
+			currentMontage = wideArea2;
+
+			UE_LOG(LogTemp, Warning, TEXT("wideArea2"));
+			attackIndex++;
+			break;
+		case EAttackState::InstantDeath:
+			currentMontage = InstantDeath;
+
+			UE_LOG(LogTemp, Warning, TEXT("InstantDeath"));
+			attackIndex++;
+			break;
+		default:
+			currentMontage = nullptr;
+			attackIndex = 0;
+			mState = EEnemyState::Move;
+			break;
+		}
+
+		if (currentMontage != nullptr)
+			Mult_AttackState(currentMontage);
+		
+	}
+
 }
 
 
@@ -366,9 +442,25 @@ void AEnemy::Danmage(int32 Damage)
 	{
 		mState = EEnemyState::Die;
 		isDie = true;
+		enemyMainUI->UpdateCurrentHp(0, enemyHp);
 	}
+	else
+	{
+		enemyMainUI->UpdateCurrentHp(currentHp, enemyHp);
+	}
+}
 
-	enemyMainUI->UpdateCurrentHp(currentHp, enemyHp);
+
+
+void AEnemy::Mult_AttackState_Implementation(UAnimMontage* Montage)
+{
+	if (Montage)
+	{
+		PlayAnimMontage(Montage);
+
+		mState = EEnemyState::Idle;
+		anim->animState = mState;
+	}
 }
 
 void AEnemy::Client_SpawnEffect_Implementation(const FVector& pos, TSubclassOf<AParticleActor> actor)
@@ -378,15 +470,7 @@ void AEnemy::Client_SpawnEffect_Implementation(const FVector& pos, TSubclassOf<A
 
 
 
-void AEnemy::Client_RandomLightingBegine_Implementation(const TArray<FVector>& spawnPos, UNiagaraSystem* niagara)
-{
-	for (const FVector& pos : spawnPos)
-	{
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), niagara, pos, FRotator::ZeroRotator);
-	}
-}
-
-void AEnemy::Client_RandomLightingEnd_Implementation(const TArray<FVector>& spawnPos, TSubclassOf<AParticleActor> actor)
+void AEnemy::Client_RandomLighting_Implementation(const TArray<FVector>& spawnPos, TSubclassOf<AParticleActor> actor)
 {
 	for (const FVector& pos : spawnPos)
 	{
@@ -394,24 +478,22 @@ void AEnemy::Client_RandomLightingEnd_Implementation(const TArray<FVector>& spaw
 	}
 }
 
-void AEnemy::Client_RandomPourLightingCircle_Implementation(const FVector& spawnPos, UNiagaraSystem* niagara)
-{
-	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), niagara, spawnPos, FRotator::ZeroRotator);
-}
 
-void AEnemy::Client_RandomPourLightingActor_Implementation(const FVector& spawnPos, TSubclassOf<AParticleActor> actor)
+void AEnemy::Client_RandomPourLightingSpawnn_Implementation(const FVector& spawnPos, TSubclassOf<AParticleActor> actor)
 {
 	GetWorld()->SpawnActor<AParticleActor>(actor, spawnPos, FRotator::ZeroRotator);
 }
 
-void AEnemy::Client_RandomHurricaneCircle_Implementation(const TArray<FVector>& spawnPos, UNiagaraSystem* niagara)
+
+void AEnemy::Client_RandomHurricaneCircle_Implementation(const TArray<FVector>& spawnPos, TSubclassOf<AParticleActor> actor)
 {
 	if (HasAuthority())
 		return;
 
+
 	for (const FVector& pos : spawnPos)
 	{
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), niagara, pos, FRotator::ZeroRotator);
+		GetWorld()->SpawnActor<AParticleActor>(actor, pos, FRotator::ZeroRotator);
 	}
 
 }

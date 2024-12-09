@@ -6,8 +6,6 @@
 #include "Kismet\KismetMathLibrary.h"
 #include "Kismet\KismetSystemLibrary.h"
 
-#include "NiagaraSystem.h"
-#include "NiagaraFunctionLibrary.h"
 #include "GuidedActor.h"
 #include "ParticleActor.h"
 
@@ -59,15 +57,13 @@ void UNotifyState_GuidedHurricane::NotifyBegin(USkeletalMeshComponent* MeshComp,
 					spawnPos[i].Z = CenterPos.Z - 260.0f;
 				}
 
-				UNiagaraFunctionLibrary::SpawnSystemAtLocation(world, spawnEffect, spawnPos[i], FRotator::ZeroRotator);
-
-
+				world->SpawnActor<AParticleActor>(spawnEffectActor, spawnPos[i], FRotator::ZeroRotator);
 
 			}
 			AEnemy* enemy = Cast<AEnemy>(me);
 			if (enemy)
 			{
-				enemy->Client_RandomHurricaneCircle(spawnPos, spawnEffect);
+				enemy->Client_RandomHurricaneCircle(spawnPos, spawnEffectActor);
 			}
 		}
 
@@ -75,13 +71,9 @@ void UNotifyState_GuidedHurricane::NotifyBegin(USkeletalMeshComponent* MeshComp,
 
 }
 
-void UNotifyState_GuidedHurricane::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
-{
-}
-
 void UNotifyState_GuidedHurricane::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
-	if (me->HasAuthority())
+	if (MeshComp->GetOwner()->HasAuthority())
 	{
 		if (world)
 		{

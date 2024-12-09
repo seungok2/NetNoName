@@ -11,8 +11,6 @@
  * 
  */
 class AParticleActor;
-class UNiagaraSystem;
-//class UNiagaraComponent;
 
 UCLASS()
 class NETNONAME_API UNotifyState_RandomLighting : public UAnimNotifyState
@@ -35,9 +33,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
 	TArray<TSubclassOf<AParticleActor>> particleActors;
 	
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
-	UNiagaraSystem* magicCircle;
+	TSubclassOf<AParticleActor> magicCircleActor;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
 	float spawnMinRadius = 100.0f;

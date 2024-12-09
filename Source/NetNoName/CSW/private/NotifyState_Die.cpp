@@ -6,40 +6,49 @@
 #include "Materials\MaterialInstanceDynamic.h"
 #include "ParticleActor.h"
 
+#include "Enemy.h"
+
 void UNotifyState_Die::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
 	AActor* my = MeshComp->GetOwner();
 
-	FVector pos = my->GetActorLocation();
-	FRotator rot = FRotator::ZeroRotator;
-
-	FHitResult hitInfo;
-	FVector start = pos + FVector(0, 0, 5000.0f);
-	FVector end = pos + FVector(0, 0, -5000.0f);
-
-	bool bHit = GetWorld()->LineTraceSingleByChannel(hitInfo, start, end, ECollisionChannel::ECC_Visibility);
-
-	if (bHit)
+	if (my->HasAuthority())
 	{
-		// 땅이 맞으면
-		pos.Z = hitInfo.Location.Z;
-	}
-	else
-	{
-		pos.Z = -250.0f;
-	}
+		FVector pos = my->GetActorLocation();
+		FRotator rot = FRotator::ZeroRotator;
 
+		FHitResult hitInfo;
+		FVector start = pos + FVector(0, 0, 5000.0f);
+		FVector end = pos + FVector(0, 0, -5000.0f);
 
-	my->GetWorld()->SpawnActor<AParticleActor>(p_Actor, pos, rot);
+		bool bHit = GetWorld()->LineTraceSingleByChannel(hitInfo, start, end, ECollisionChannel::ECC_Visibility);
 
-	if (MeshComp)
-	{
-		// 머티리얼을 동적으로 생성
-		mt_Dynamic = MeshComp->CreateAndSetMaterialInstanceDynamic(0);
-		if (mt_Dynamic)
+		if (bHit)
 		{
-			opacity = 1.0f; // 초기 Opacity
-			mt_Dynamic->SetScalarParameterValue("Opacity", opacity);
+			// 땅이 맞으면
+			pos.Z = hitInfo.Location.Z;
+		}
+		else
+		{
+			pos.Z = -250.0f;
+		}
+
+
+		my->GetWorld()->SpawnActor<AParticleActor>(p_Actor, pos, rot);
+
+		AEnemy* enemy = Cast<AEnemy>(my);
+		enemy->Client_SpawnEffect(pos, p_Actor);
+
+
+		if (MeshComp)
+		{
+			// 머티리얼을 동적으로 생성
+			mt_Dynamic = MeshComp->CreateAndSetMaterialInstanceDynamic(0);
+			if (mt_Dynamic)
+			{
+				opacity = 1.0f; // 초기 Opacity
+				mt_Dynamic->SetScalarParameterValue("Opacity", opacity);
+			}
 		}
 	}
 }
