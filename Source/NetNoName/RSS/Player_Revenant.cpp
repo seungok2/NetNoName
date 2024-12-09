@@ -3,6 +3,7 @@
 
 #include "Player_Revenant.h"
 #include "EnhancedInputComponent.h"
+#include "ParticleActor.h"
 #include "Projectile_Base.h"
 #include "UI_PlayerInfo.h"
 #include "Blueprint/UserWidget.h"
@@ -238,6 +239,39 @@ float APlayer_Revenant::TakeDamage(float DamageAmount, struct FDamageEvent const
 		}
 	}
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+}
+
+void APlayer_Revenant::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+	Super::NotifyActorBeginOverlap(OtherActor);
+
+	if (HasAuthority())
+	{
+		if (OtherActor->IsA(AParticleActor::StaticClass()))
+		{
+			//UE_LOG(LogTemp, Warning, TEXT("APlayer_Revenant : NotifyActorBeginOverlap"));
+			float ImpactAngle = 0;
+			int32 DamageAmount = FMath::RandRange( 100,500 );
+		
+			PlayerHP_Current -= DamageAmount;
+			On_ChangeHP();
+		
+			UE_LOG(LogTemp, Warning, TEXT("NotifyActorBeginOverlap [%s] : %f"), *GetActorNameOrLabel(), PlayerHP_Current);
+		
+			if(PlayerHP_Current <= 0 && bIsDead == false)
+			{
+				bIsDead = true;
+
+				// 움직이지 못하게 하자.
+				GetCharacterMovement()->DisableMovement();
+				BroadCast_Die(ImpactAngle);
+			}
+			else
+			{
+				BroadCast_TakeDamage(ImpactAngle);
+			}
+		}
+	}	
 }
 
 void APlayer_Revenant::BroadCast_TakeDamage_Implementation(float ImpactAngle)
