@@ -185,6 +185,7 @@ void APlayer_Revenant::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 float APlayer_Revenant::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
 	class AController* EventInstigator, AActor* DamageCauser)
 {
+	if (bIsDead) return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	if (HasAuthority())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("TakeDamage"));
@@ -224,6 +225,8 @@ float APlayer_Revenant::TakeDamage(float DamageAmount, struct FDamageEvent const
 		}
 		
 		PlayerHP_Current -= DamageAmount;
+		if (PlayerHP_Current<0)
+			PlayerHP_Current = 0;
 		On_ChangeHP();
 		
 		UE_LOG(LogTemp, Warning, TEXT("TakeDamage [%s] : %f, ImpactAngle : %f"), *GetActorNameOrLabel(), PlayerHP_Current, ImpactAngle);
@@ -248,6 +251,7 @@ void APlayer_Revenant::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
 
+	if (bIsDead) return;
 	if (HasAuthority())
 	{
 		if (OtherActor->IsA(AParticleActor::StaticClass()))
@@ -257,6 +261,8 @@ void APlayer_Revenant::NotifyActorBeginOverlap(AActor* OtherActor)
 			int32 DamageAmount = FMath::RandRange( 100,500 );
 		
 			PlayerHP_Current -= DamageAmount;
+			if (PlayerHP_Current<0)
+				PlayerHP_Current = 0;
 			On_ChangeHP();
 		
 			UE_LOG(LogTemp, Warning, TEXT("NotifyActorBeginOverlap [%s] : %f"), *GetActorNameOrLabel(), PlayerHP_Current);
@@ -291,16 +297,16 @@ void APlayer_Revenant::BroadCast_TakeDamage_Implementation(float ImpactAngle)
 
 void APlayer_Revenant::BroadCast_Die_Implementation(float ImpactAngle)
 {
-	UE_LOG(LogTemp, Warning, TEXT("BroadCast_Die [ImpactAngle : %f]"),ImpactAngle);
-	bool bIsForward = (FMath::Abs(ImpactAngle) < 90);
-	FName Section = bIsForward?FName("Forward"):FName("Backward");
+	// UE_LOG(LogTemp, Warning, TEXT("BroadCast_Die [ImpactAngle : %f]"),ImpactAngle);
+	// bool bIsForward = (FMath::Abs(ImpactAngle) < 90);
+	// FName Section = bIsForward?FName("Forward"):FName("Backward");
 	//UE_LOG(LogTemp, Warning, TEXT("BroadCast_TakeDamage bIsDead : %s"), *Section.ToString());
 	float returnValue = AnimInstance->Montage_Play(AM_Death, 1);
 	UGameplayStatics::SpawnSoundAtLocation(GetWorld(), SFX_Die, GetActorLocation());
-	if (returnValue > 0.0f)
-	{
-		AnimInstance->Montage_JumpToSection(Section, AM_Death);
-	}
+	// if (returnValue > 0.0f)
+	// {
+	// 	AnimInstance->Montage_JumpToSection(Section, AM_Death);
+	// }
 }
 
 void APlayer_Revenant::On_ChangeHP()
