@@ -94,6 +94,7 @@ void UNotifyState_RandomLighting::NotifyEnd(USkeletalMeshComponent* MeshComp, UA
 				
 				// Actor·Î ´ëÃ¼
 				world->SpawnActor<AParticleActor>(particleActors[Randomindex], spawnPos[i], FRotator::ZeroRotator);
+				
 			}
 
 			AEnemy* enemy = Cast<AEnemy>(me);

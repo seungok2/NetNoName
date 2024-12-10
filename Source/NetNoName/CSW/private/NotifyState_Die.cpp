@@ -37,7 +37,7 @@ void UNotifyState_Die::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequen
 		my->GetWorld()->SpawnActor<AParticleActor>(p_Actor, pos, rot);
 
 		AEnemy* enemy = Cast<AEnemy>(my);
-		//enemy->Client_SpawnEffect(pos, p_Actor);
+		enemy->Client_SpawnEffect(pos, p_Actor);
 	}
 }
 
@@ -47,6 +47,22 @@ void UNotifyState_Die::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenc
 
 void UNotifyState_Die::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
+	if (!MeshComp || !MeshComp->GetWorld())
+		return;
 
+	FTimerHandle TimerHandle;
+
+	// 5ÃÊ ÈÄ ÆÄ±«
+	MeshComp->GetWorld()->GetTimerManager().SetTimer(
+		TimerHandle,
+		[MeshComp]()
+		{
+			if (AActor* Owner = MeshComp->GetOwner())
+			{
+				Owner->Destroy();
+				UE_LOG(LogTemp, Warning, TEXT("Actor destroyed after 5 seconds."));
+			}
+		},
+		5.0f, false);
 
 }

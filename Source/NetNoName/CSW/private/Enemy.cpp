@@ -467,6 +467,7 @@ void AEnemy::OnRep_CurrentHp()
 		{
 			isDie = true;
 			mState = EEnemyState::Die;
+
 		}
 	}
 }
@@ -489,6 +490,14 @@ void AEnemy::TakeDanmage(int32 Damage)
 			currentHp = 0;
 
 			//Mult_UpdateHealthAndDeath(currentHp, enemyHp);
+			
+			FTimerHandle moveToLobbyTimer;
+			GetWorld()->GetTimerManager().SetTimer(moveToLobbyTimer,
+				[this]()
+				{
+					enemyMainUI->AddTransferLevel();
+				}
+			, 8.0f, false);
 		}
 		
 		OnRep_CurrentHp();
