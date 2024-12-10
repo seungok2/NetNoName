@@ -16,5 +16,5 @@ void UTransferToLevelUI::NativeConstruct()
 
 void UTransferToLevelUI::OnClick_Transfer()
 {
-	GetWorld()->ServerTravel(TEXT("/Game/Polar/Maps/RobbyMap.RobbyMap'"));
+	GetWorld()->ServerTravel(TEXT("/Game/Polar/Maps/RobbyMap?listen"));
 }
