@@ -4,6 +4,7 @@
 #include "CSW_TestMainUI.h"
 #include "Components\NamedSlot.h"
 #include "EnemyHpBarUI.h"
+#include "TransferToLevelUI.h"
 
 void UCSW_TestMainUI::NativeConstruct()
 {
@@ -46,6 +47,15 @@ void UCSW_TestMainUI::UpdateCurrentHp(int32 current, int32 maxHp)
 			, 3.0f, false
 		);
 	}
+}
+
+void UCSW_TestMainUI::AddTransferLevel()
+{
+	if (transferToLevelFactory == nullptr) return;
+
+	transferUI = CreateWidget<UTransferToLevelUI>(GetWorld(), transferToLevelFactory);
+
+	transferSlot->AddChild(transferUI);
 }
 
 

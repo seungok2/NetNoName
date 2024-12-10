@@ -22,14 +22,23 @@ protected:
 public:
 	UPROPERTY(meta = (BindWidget))
 	class UNamedSlot* enemyHpSlot;
+	UPROPERTY(meta = (BindWidget))
+	class UNamedSlot* transferSlot;
+
+
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UEnemyHpBarUI> enemyHpBarFactory;
 
 	class UEnemyHpBarUI* enemyHp;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UTransferToLevelUI> transferToLevelFactory;
+	class UTransferToLevelUI* transferUI;
+
 public:
 	void AddEnemeyHpBar();
 	void UpdateCurrentHp(int32 current, int32 maxHp);
+	void AddTransferLevel();
 
 };
