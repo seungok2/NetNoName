@@ -4,6 +4,11 @@
 #include "ParticleActor.h"
 #include "Components\SphereComponent.h"
 #include "TimerManager.h"
+#include "Kismet\GameplayStatics.h"
+#include "Sound/SoundCue.h"
+#include "Sound/SoundWave.h"
+#include "Components/AudioComponent.h"
+
 
 // Sets default values
 AParticleActor::AParticleActor()
@@ -16,7 +21,11 @@ AParticleActor::AParticleActor()
 	sphereCol->InitSphereRadius(size);
 	//sphereCol->SetCollisionProfileName(TEXT("BlockAll"));
 
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
+	AudioComponent->SetupAttachment(RootComponent);
+	AudioComponent->bAutoActivate = false; // 자동 재생 비활성화
 
+	SetReplicates(true);
 }
 
 // Called when the game starts or when spawned
@@ -29,8 +38,17 @@ void AParticleActor::BeginPlay()
 
 	FTimerHandle handle;
 	GetWorld()->GetTimerManager().SetTimer(handle, this, &AParticleActor::DestroyActor, DestroyTime, false);
-	
-	sphereCol->OnComponentBeginOverlap.AddDynamic(this, &AParticleActor::OnOverlapBegin);
+
+	if (effectSound)
+	{
+		AudioComponent->SetSound(effectSound);
+		AudioComponent->Play();
+	}
+	else if (effectSoundWave)
+	{
+		AudioComponent->SetSound(effectSoundWave);
+		AudioComponent->Play();
+	}
 }
 
 // Called every frame
@@ -42,14 +60,26 @@ void AParticleActor::Tick(float DeltaTime)
 
 void AParticleActor::DestroyActor()
 {
+	if (effectSound)
+	{
+		if (AudioComponent && AudioComponent->IsPlaying())
+		{
+			AudioComponent->Stop();
+		}
+	}
+	else if (effectSoundWave)
+	{
+		if (AudioComponent && AudioComponent->IsPlaying())
+		{
+			AudioComponent->Stop();
+		}
+	}
+
 	if (IsValid(this))
 	{
 		Destroy();
 	}
 }
 
-void AParticleActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	UE_LOG(LogTemp, Warning, TEXT("hit"));
-}
+
 

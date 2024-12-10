@@ -3,12 +3,14 @@
 
 #include "Player_Revenant.h"
 #include "EnhancedInputComponent.h"
+#include "ParticleActor.h"
 #include "Projectile_Base.h"
 #include "UI_PlayerInfo.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 APlayer_Revenant::APlayer_Revenant()
 {
@@ -36,12 +38,15 @@ void APlayer_Revenant::ComboAttackSave()
 
 void APlayer_Revenant::Die()
 {
-	UE_LOG(LogTemp, Warning, TEXT("AnimNotify_Die"));
-	AnimInstance-> Montage_SetPlayRate(AM_Death, 0.0f);
+	UE_LOG(LogTemp, Warning, TEXT("AnimNotify_Die : %s"), *GetActorNameOrLabel());
+	GetMesh()->SetVisibility(false);
+	
 }
 
 void APlayer_Revenant::PrimaryAttack()
 {
+	if (bIsDead) return;
+	
 	if (!bIsCombatMode)
 	{
 		bIsCombatMode = true;
@@ -78,6 +83,7 @@ void APlayer_Revenant::BroadCast_PrimaryAttack_Implementation(FTransform AimTran
 	{
 		AnimInstance->Montage_Play(AM_PrimaryAttack);
 	}
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(), SFX_Shot, GetActorLocation());
 	auto SpawnedActor = GetWorld()->SpawnActor<AProjectile_Base>(Projectile_Primary, AimTransForm);
 	if (SpawnedActor)
 	{
@@ -93,6 +99,7 @@ void APlayer_Revenant::BroadCast_PrimaryAttack_Implementation(FTransform AimTran
 void APlayer_Revenant::Reload()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Reload"));
+	if (bIsDead) return;
 	if (bIsAttacking) return;
 	if (CurrentPrimaryProjectileCount == MaxPrimaryProjectileCount) return;
 
@@ -114,11 +121,13 @@ void APlayer_Revenant::BroadCast_Reload_Implementation()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AM_Reload"));
 		AnimInstance->Montage_Play(AM_Reload);
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), SFX_Reload, GetActorLocation());
 	}
 }
 
 void APlayer_Revenant::ChangeCombatMode()
 {
+	if (bIsDead) return;
 	bIsCombatMode = !bIsCombatMode;
 }
 
@@ -176,6 +185,7 @@ void APlayer_Revenant::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 float APlayer_Revenant::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
 	class AController* EventInstigator, AActor* DamageCauser)
 {
+	if (bIsDead) return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	if (HasAuthority())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("TakeDamage"));
@@ -215,6 +225,8 @@ float APlayer_Revenant::TakeDamage(float DamageAmount, struct FDamageEvent const
 		}
 		
 		PlayerHP_Current -= DamageAmount;
+		if (PlayerHP_Current<0)
+			PlayerHP_Current = 0;
 		On_ChangeHP();
 		
 		UE_LOG(LogTemp, Warning, TEXT("TakeDamage [%s] : %f, ImpactAngle : %f"), *GetActorNameOrLabel(), PlayerHP_Current, ImpactAngle);
@@ -235,6 +247,42 @@ float APlayer_Revenant::TakeDamage(float DamageAmount, struct FDamageEvent const
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
 
+void APlayer_Revenant::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+	Super::NotifyActorBeginOverlap(OtherActor);
+
+	if (bIsDead) return;
+	if (HasAuthority())
+	{
+		if (OtherActor->IsA(AParticleActor::StaticClass()))
+		{
+			//UE_LOG(LogTemp, Warning, TEXT("APlayer_Revenant : NotifyActorBeginOverlap"));
+			float ImpactAngle = 0;
+			int32 DamageAmount = FMath::RandRange( 100,500 );
+		
+			PlayerHP_Current -= DamageAmount;
+			if (PlayerHP_Current<0)
+				PlayerHP_Current = 0;
+			On_ChangeHP();
+		
+			UE_LOG(LogTemp, Warning, TEXT("NotifyActorBeginOverlap [%s] : %f"), *GetActorNameOrLabel(), PlayerHP_Current);
+		
+			if(PlayerHP_Current <= 0 && bIsDead == false)
+			{
+				bIsDead = true;
+
+				// 움직이지 못하게 하자.
+				GetCharacterMovement()->DisableMovement();
+				BroadCast_Die(ImpactAngle);
+			}
+			else
+			{
+				BroadCast_TakeDamage(ImpactAngle);
+			}
+		}
+	}	
+}
+
 void APlayer_Revenant::BroadCast_TakeDamage_Implementation(float ImpactAngle)
 {
 	UE_LOG(LogTemp, Warning, TEXT("BroadCast_TakeDamage [ImpactAngle : %f]"),ImpactAngle);
@@ -242,20 +290,23 @@ void APlayer_Revenant::BroadCast_TakeDamage_Implementation(float ImpactAngle)
 
 	//애니메이션 실행?!
 	bHitAnimationActive = true;
+
+	AnimInstance->Montage_Play(AM_HitReact);
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(), SFX_Hit, GetActorLocation());
 }
 
 void APlayer_Revenant::BroadCast_Die_Implementation(float ImpactAngle)
 {
-	UE_LOG(LogTemp, Warning, TEXT("BroadCast_Die [ImpactAngle : %f]"),ImpactAngle);
-	bool bIsForward = (FMath::Abs(ImpactAngle) < 90);
-	FName Section = bIsForward?FName("Forward"):FName("Backward");
+	// UE_LOG(LogTemp, Warning, TEXT("BroadCast_Die [ImpactAngle : %f]"),ImpactAngle);
+	// bool bIsForward = (FMath::Abs(ImpactAngle) < 90);
+	// FName Section = bIsForward?FName("Forward"):FName("Backward");
 	//UE_LOG(LogTemp, Warning, TEXT("BroadCast_TakeDamage bIsDead : %s"), *Section.ToString());
 	float returnValue = AnimInstance->Montage_Play(AM_Death, 1);
-
-	if (returnValue > 0.0f)
-	{
-		AnimInstance->Montage_JumpToSection(Section, AM_Death);
-	}
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(), SFX_Die, GetActorLocation());
+	// if (returnValue > 0.0f)
+	// {
+	// 	AnimInstance->Montage_JumpToSection(Section, AM_Death);
+	// }
 }
 
 void APlayer_Revenant::On_ChangeHP()

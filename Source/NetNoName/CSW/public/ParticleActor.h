@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "ParticleActor.generated.h"
 
+
 class USphereComponent;
 
 UCLASS()
@@ -37,10 +38,17 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Setting")
 	float DestroyTime = 3.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
+	class USoundCue* effectSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
+	class USoundWave* effectSoundWave;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Audio")
+	UAudioComponent* AudioComponent;
+
 protected:
 	void DestroyActor();
 	
-	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-		bool bFromSweep, const FHitResult& SweepResult);
 
 };

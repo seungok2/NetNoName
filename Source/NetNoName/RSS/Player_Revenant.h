@@ -55,6 +55,9 @@ public:
 	UAnimMontage* AM_Reload;
 
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
+	UAnimMontage* AM_HitReact;
+
+	UPROPERTY(EditAnywhere, Blueprintable, Category = Animation)
 	UAnimMontage* AM_Death;
 	
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Projectile)
@@ -66,6 +69,18 @@ public:
 	UPROPERTY(EditAnywhere, Blueprintable, Category = Projectile)
 	int8 CurrentPrimaryProjectileCount = 4;
 
+	UPROPERTY(EditAnywhere, Category = SFX)
+	USoundBase* SFX_Shot;
+
+	UPROPERTY(EditAnywhere, Category = SFX)
+	USoundBase* SFX_Reload;
+	
+	UPROPERTY(EditAnywhere, Category = SFX)
+	USoundBase* SFX_Hit;
+
+	UPROPERTY(EditAnywhere, Category = SFX)
+	USoundBase* SFX_Die;
+		
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UUserWidget> CrossHairWidgetClass;
 	UPROPERTY()
@@ -97,7 +112,8 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
-
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+	
 	UFUNCTION(NetMulticast, Reliable)
 	void BroadCast_TakeDamage(float Angle);
 	UFUNCTION(NetMulticast, Reliable)

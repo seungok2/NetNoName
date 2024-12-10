@@ -7,9 +7,10 @@
 #include "Interfaces/OnlineSessionInterface.h"
 #include "NetGameInstance.generated.h"
 
-/**
- * 
- */
+
+DECLARE_DELEGATE_TwoParams(FAddSession, int32, FString);
+DECLARE_DELEGATE_OneParam(FFindComplete, bool);
+
 UCLASS()
 class NETNONAME_API UNetGameInstance : public UGameInstance
 {
@@ -33,12 +34,23 @@ public:
 	void FindOtherSession();
 	void OnFindSessionComplete(bool bWasSuccessful);
 
+	// 세션 참여
+	void JoinOtherSession(int32 idx);
+	void OnJoinSessionComplete(FName sessionName, EOnJoinSessionCompleteResult::Type result);
+
 public:
 	// 세션의 모든 처리를 진행
+	
 	IOnlineSessionPtr SessionInterface;
 
 	// 세션 검색 처리
 	// TSharePtr 은 스마트 포인터로 메모리관리를 알아서 해줌
 	TSharedPtr<FOnlineSessionSearch> sessionSearch;
+
+	// 세션이 검색되었을 때 각 세션의 정보를 전달해주는 딜리게이트
+	FAddSession onAddSession;
+
+	// 세션 검색이 완전 완료 되었을 때 전달해주는 델리게이트
+	FFindComplete onFindComplete;
 	
 };

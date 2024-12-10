@@ -21,7 +21,8 @@ void UNetGameInstance::Init()
 		SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this, &UNetGameInstance::OnDestroySessionComplete);
 		// 세션 검색 성공 시 호출되는 함수 등록
 		SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this, &UNetGameInstance::OnFindSessionComplete);
-
+		// 세션 참여 요청 성공시 호출되는 함수 등록
+		SessionInterface->OnJoinSessionCompleteDelegates.AddUObject(this, &UNetGameInstance::OnJoinSessionComplete);
 	}
 }
 
@@ -60,6 +61,7 @@ void UNetGameInstance::OnCreateSessionComplete(FName sessionName, bool bWasSucce
 	if(bWasSuccessful)
 	{
 		UE_LOG(LogTemp,Warning,TEXT("OnCreateSessionComplete : %s"), *sessionName.ToString());
+		
 	}
 	else
 	{
@@ -91,17 +93,20 @@ void UNetGameInstance::OnDestroySessionComplete(FName sessionName, bool bWasSucc
 void UNetGameInstance::FindOtherSession()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Session Search Start"));
+	onFindComplete.ExecuteIfBound(false);
 	
 	// 세션 검색 설정
 	sessionSearch = MakeShared<FOnlineSessionSearch>();
 
+	// 랜을 사용할지 사용 여부
 	FName subsysName = IOnlineSubsystem::Get()->GetSubsystemName();
 	UE_LOG(LogTemp, Warning, TEXT("SubSystem Name : %s"), *subsysName.ToString());
 	sessionSearch->bIsLanQuery = subsysName.IsEqual(FName(TEXT("NULL")));
 
 	// 활성화 되어있는 세션만 검색하자
 	sessionSearch->QuerySettings.Set(SEARCH_PRESENCE,true,EOnlineComparisonOp::Equals);
-
+	//sessionSearch->QuerySettings.Set(TEXT("DP_NAME"), FString(TEXT("SeSAC")), EOnlineComparisonOp::Equals);
+	
 	//세션을 몇개까지 검색할지
 	sessionSearch->MaxSearchResults = 100;
 
@@ -126,15 +131,42 @@ void UNetGameInstance::OnFindSessionComplete(bool bWasSuccessful)
 
 			// 세션 만들 사람 이름 (LAN은 PC이름, Steam은 ID가 들어감)
 			FString sessionCreator = sr.Session.OwningUserName;
-
 			UE_LOG(LogTemp,Warning,TEXT("Session : %s, Creator : %s"), *displayName, *sessionCreator);
 
+			// 세션정보를 넘겨서 SessionItem을 추가하게 하자
+			FString sessionInfo = FString::Printf(TEXT("%s -  %s"), *displayName, *sessionCreator);
+			onAddSession.ExecuteIfBound(i, sessionInfo);
+			
 		}
-		
 		
 	}
 	
-	
 	UE_LOG(LogTemp, Warning, TEXT("Session Search Complete"));
+	onFindComplete.ExecuteIfBound(true);
 	
+}
+
+void UNetGameInstance::JoinOtherSession(int32 idx)
+{
+	auto results = sessionSearch->SearchResults;
+
+	// 세션 이름
+	FString displayName;
+	results[idx].Session.SessionSettings.Get(TEXT("DP_NAME"), displayName);
+
+	// 세션 참여
+	SessionInterface->JoinSession(0, FName(displayName), results[idx]);
+	
+}
+
+void UNetGameInstance::OnJoinSessionComplete(FName sessionName, EOnJoinSessionCompleteResult::Type result)
+{
+	if(result == EOnJoinSessionCompleteResult::Success)
+	{
+		FString url;
+		SessionInterface->GetResolvedConnectString(sessionName, url);
+		
+		APlayerController* pc = GetWorld()->GetFirstPlayerController();
+		pc->ClientTravel(url, ETravelType::TRAVEL_Absolute);
+	}
 }

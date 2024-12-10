@@ -22,6 +22,8 @@ AGuidedActor::AGuidedActor()
 
 	enemy = nullptr;
 	player = nullptr;
+
+	SetReplicates(true);
 }
 
 // Called when the game starts or when spawned
@@ -30,9 +32,19 @@ void AGuidedActor::BeginPlay()
 	Super::BeginPlay();
 	
 	FTimerHandle handle;
-	GetWorld()->GetTimerManager().SetTimer(handle, this, &AGuidedActor::DestroyActor, destroyTime, false);
+	//GetWorld()->GetTimerManager().SetTimer(handle, this, &AGuidedActor::DestroyActor, destroyTime, false);
 
-	sphereCol->OnComponentBeginOverlap.AddDynamic(this, &AGuidedActor::OnOverlapBegin);
+	GetWorld()->GetTimerManager().SetTimer(
+		handle,
+		[this]() 
+		{
+			if (IsValid(this))
+			{
+				Destroy();
+			}
+		},
+		destroyTime, false);
+
 
 
 	AActor* foundActor = UGameplayStatics::GetActorOfClass(GetWorld(), AEnemy::StaticClass());
@@ -88,14 +100,5 @@ void AGuidedActor::DestroyActor()
 	}
 }
 
-void AGuidedActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
 
-	UE_LOG(LogTemp, Warning, TEXT("Hit"));
-	if (OtherActor) // OtherActor가 유효한지 확인
-	{
-		FString ActorName = OtherActor->GetName(); // 이름 가져오기
-		UE_LOG(LogTemp, Warning, TEXT("Hit: %s"), *ActorName);
-	}
-}
 
