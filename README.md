@@ -1,5 +1,9 @@
-Developed with Unreal Engine 5 Network Game for 3 weeks with 3 people
+Developed with Unreal Engine 5 
+
+Network Game for 3 weeks with 3 people
+
 4 months of studying for Unreal
+
 <div align="center">
 
   
