@@ -55,7 +55,8 @@ https://www.youtube.com/watch?v=ZlltAufpLec&list=PLI4ALOxREG_WXlYnrLniYcXgxgPxHi
 
 - Boss Disign(보스 디자인)
 
-https://github.com/user-attachments/assets/887dba0a-7c2b-4304-b076-7d73f0dfa083
+![Boss_patten_gif](https://github.com/user-attachments/assets/1558dbbb-0e04-42ef-8fe2-fc5d73149e45)
+
 
 - Multiplex Boss Pattern(다양한 패턴)
 
