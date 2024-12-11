@@ -4,7 +4,7 @@ Developed with Unreal Engine 5 Network Game for 3 weeks with 3 people
 1 - Play Vidio Link(플레이 영상)
 
 https://www.youtube.com/watch?v=ZlltAufpLec&list=PLI4ALOxREG_WXlYnrLniYcXgxgPxHiFxq&index=4
-![PlayMovie_die](https://github.com/user-attachments/assets/ff209528-3571-4b29-9d5d-a6c639f8e460)
+![PlayMovid_Win](https://github.com/user-attachments/assets/b1ab786b-9e89-4b4f-a309-95b70b51f75d)
 
 
 2 - Level Design(맵 디자인)
