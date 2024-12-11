@@ -41,10 +41,17 @@ https://www.youtube.com/watch?v=ZlltAufpLec&list=PLI4ALOxREG_WXlYnrLniYcXgxgPxHi
 
 ![4Character](https://github.com/user-attachments/assets/991496fb-85f7-4af9-bc4f-a4474c6685a8)
 
-- 4Character synchronization & other appearance
+- 4 Character synchronization & other appearance
 
 
 ### 5 - Boss(보스)
+![파라곤보스](https://github.com/user-attachments/assets/99cbb84e-f90c-45c2-92fc-db4ede202632)
+
+- Boss Disign
+
+![Boss_Raid_Patton](https://github.com/user-attachments/assets/f6e934e0-21ad-4458-a8ef-2af70a6ebd9a)
+
+- Boss Raid
 
 
 </div>
